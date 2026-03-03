@@ -353,8 +353,8 @@ const generateDetailData = (survey) => {
         {name:"Muy insatisfecho",value:4,fill:"#E85854"},
       ],
       trend:[
-        {week:"S1",pct:74},{week:"S2",pct:78},{week:"S3",pct:75},
-        {week:"S4",pct:80},{week:"S5",pct:82},{week:"S6",pct:85},
+        {week:"S1",pct:74,prev:70},{week:"S2",pct:78,prev:72},{week:"S3",pct:75,prev:74},
+        {week:"S4",pct:80,prev:73},{week:"S5",pct:82,prev:76},{week:"S6",pct:85,prev:78},
       ],
     },
     PMF:{
@@ -815,8 +815,8 @@ const CSATCharts = ({ d }) => (
         ))}
       </div>
     </ChartCard>
-    <ChartCard title="Tendencia CSAT">
-      <ResponsiveContainer width="100%" height={150}>
+    <ChartCard title="Tendencia CSAT vs. periodo anterior">
+      <ResponsiveContainer width="100%" height={170}>
         <AreaChart data={d.trend} margin={{ top:4,right:4,bottom:0,left:-20 }}>
           <defs>
             <linearGradient id="csatGrad" x1="0" y1="0" x2="0" y2="1">
@@ -828,7 +828,9 @@ const CSATCharts = ({ d }) => (
           <XAxis dataKey="week" tick={{ fill:"#94a3b8",fontSize:11 }} axisLine={false} tickLine={false}/>
           <YAxis domain={[60,100]} tick={{ fill:"#94a3b8",fontSize:11 }} axisLine={false} tickLine={false} unit="%"/>
           <Tooltip content={<ChartTooltip unit="%"/>}/>
-          <Area type="monotone" dataKey="pct" name="CSAT" stroke="#7D45A2" fill="url(#csatGrad)" strokeWidth={2.5} dot={{ fill:"#7D45A2",r:3 }}/>
+          <Area type="monotone" dataKey="prev" name="Periodo anterior" stroke={BDS.neutral[300]} fill="none" strokeWidth={1.5} strokeDasharray="6 3" dot={{ fill:BDS.neutral[300],r:2.5,strokeWidth:0 }}/>
+          <Area type="monotone" dataKey="pct" name="CSAT actual" stroke="#7D45A2" fill="url(#csatGrad)" strokeWidth={2.5} dot={{ fill:"#7D45A2",r:3 }}/>
+          <Legend iconType="circle" wrapperStyle={{ fontSize:11, paddingTop:8 }}/>
         </AreaChart>
       </ResponsiveContainer>
     </ChartCard>
