@@ -2931,28 +2931,13 @@ const AssessmentOverview = ({ assessment, onBack }) => {
 
       {/* ── Tab: Questions (published only) ── */}
       {tab==="questions" && assessment.status === "published" && (() => {
-        // Get questions relevant to this assessment's skills
         const assQuestions = ASSESSMENT_QUESTIONS.filter(q => assessment.skills.includes(q.skill));
-
-        // Generate mock branching data based on question skill type
-        const branchData = {};
-        assQuestions.forEach((q, idx) => {
-          // Some questions (scale-like) have branching: if score ≤ 2, go to a follow-up path
-          if (idx % 3 === 0 && idx + 2 < assQuestions.length) {
-            branchData[q.id] = {
-              condition: "Si responde 1 o 2 (negativo)",
-              pathA: { label:"Ruta A — Respuesta positiva (3–5)", targetIdx: idx + 1, color: BDS.emerald[600], bg: BDS.emerald[100] },
-              pathB: { label:"Ruta B — Respuesta negativa (1–2)", targetIdx: idx + 2, color: BDS.red[600], bg: BDS.red[100] },
-            };
-          }
-        });
 
         return (
           <div style={{ animation:"fadeUp 0.25s ease" }}>
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
               <p style={{ fontSize:14, fontWeight:600, color:T.textPrimary, margin:0 }}>
                 {assQuestions.length} preguntas
-                <span style={{ marginLeft:8, fontSize:12, fontWeight:400, color:T.textMuted }}>· {Object.keys(branchData).length} con ramificación</span>
               </p>
               <div style={{
                 display:"flex", alignItems:"center", gap:6, padding:"6px 12px", borderRadius:8, fontSize:12, fontWeight:600,
@@ -2965,7 +2950,6 @@ const AssessmentOverview = ({ assessment, onBack }) => {
             <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
               {assQuestions.map((q, idx) => {
                 const s = SKILL_MAP[q.skill];
-                const branch = branchData[q.id];
                 return (
                   <div key={q.id}>
                     <div style={{
@@ -2991,45 +2975,6 @@ const AssessmentOverview = ({ assessment, onBack }) => {
                             <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:12, padding:"4px 8px", borderRadius:8, fontWeight:600, background:"#eff6ff", color:"#E26500" }}>⚖️ Likert 1–5</span>
                           </div>
                         </div>
-
-                        {/* Branching visualization */}
-                        {branch && (
-                          <div style={{ marginTop:12, paddingTop:12, borderTop:`1px dashed ${BDS.neutral[200]}` }}>
-                            <p style={{ fontSize:11, fontWeight:700, color:BDS.primary[600], margin:"0 0 8px" }}>
-                              ↪ Ramificación: {branch.condition}
-                            </p>
-                            <div style={{ display:"flex", gap:10 }}>
-                              {/* Path A */}
-                              <div style={{
-                                flex:1, borderRadius:8, padding:"10px 12px",
-                                background:branch.pathA.bg, border:`1px solid ${branch.pathA.color}30`,
-                                position:"relative",
-                              }}>
-                                <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:6 }}>
-                                  <span style={{ width:8, height:8, borderRadius:"50%", background:branch.pathA.color, flexShrink:0 }}/>
-                                  <span style={{ fontSize:11, fontWeight:700, color:branch.pathA.color }}>{branch.pathA.label}</span>
-                                </div>
-                                <p style={{ fontSize:11, color:T.textMuted, margin:0 }}>
-                                  → Continúa a P{branch.pathA.targetIdx + 1}: <span style={{ fontStyle:"italic" }}>{assQuestions[branch.pathA.targetIdx]?.text.slice(0,50)}…</span>
-                                </p>
-                              </div>
-                              {/* Path B */}
-                              <div style={{
-                                flex:1, borderRadius:8, padding:"10px 12px",
-                                background:branch.pathB.bg, border:`1px solid ${branch.pathB.color}30`,
-                                position:"relative",
-                              }}>
-                                <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:6 }}>
-                                  <span style={{ width:8, height:8, borderRadius:"50%", background:branch.pathB.color, flexShrink:0 }}/>
-                                  <span style={{ fontSize:11, fontWeight:700, color:branch.pathB.color }}>{branch.pathB.label}</span>
-                                </div>
-                                <p style={{ fontSize:11, color:T.textMuted, margin:0 }}>
-                                  → Salta a P{branch.pathB.targetIdx + 1}: <span style={{ fontStyle:"italic" }}>{assQuestions[branch.pathB.targetIdx]?.text.slice(0,50)}…</span>
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>
