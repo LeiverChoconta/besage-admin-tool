@@ -1609,40 +1609,7 @@ const SurveyBuilder = ({ onBack }) => {
 
         {step === 0 && (
         <div style={{ animation:"fadeUp 0.2s ease" }}>
-        {/* Type catalog */}
-        <div className="mb-7">
-          <p className="text-xs font-semibold text-[#A6A09B] uppercase tracking-widest mb-3">Tipos de encuesta disponibles</p>
-          <div className="grid grid-cols-4 gap-2.5">
-            {typeList.map(t => (
-              <div key={t.abbr}
-                onMouseEnter={()=>setHovered(t.abbr)}
-                onMouseLeave={()=>setHovered(null)}
-                onClick={()=>{ setPrompt(`Quiero crear una encuesta de tipo ${t.label} (${t.abbr})`); taRef.current?.focus(); }}
-                className="bg-white border rounded-xl p-3.5 cursor-pointer transition-all"
-                style={{
-                  borderColor: hovered===t.abbr ? t.color : "#E7E5E4",
-                  boxShadow:   hovered===t.abbr ? `0 0 0 3px ${t.color}15` : "0 1px 3px rgba(0,0,0,0.04)",
-                }}>
-                <div className="flex items-center justify-between mb-2.5">
-                  <span className="text-xl leading-none">{t.icon}</span>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded"
-                    style={{ background:t.bg, color:t.color, fontFamily:"'DM Mono', monospace" }}>{t.abbr}</span>
-                </div>
-                <p className="text-xs font-bold text-[#292524] leading-snug mb-1">{t.label}</p>
-                <div className="mt-2 pt-2 border-t border-[rgba(12,10,9,0.06)]">
-                  <p className="text-[10px] font-semibold uppercase tracking-wide mb-0.5" style={{ color:t.color }}>{t.mechanic}</p>
-                  <p className="text-[10px] text-[#A6A09B] leading-relaxed line-clamp-3">{t.mechanicDesc}</p>
-                </div>
-                {hovered===t.abbr && (
-                  <div className="mt-2 pt-2 border-t border-[rgba(12,10,9,0.06)]" style={{ animation:"fadeUp 0.15s ease" }}>
-                    <p className="text-[10px] font-semibold text-[#57534D] mb-0.5">{t.benefit}</p>
-                    <p className="text-[10px] text-[#A6A09B] leading-relaxed">{t.benefitDesc}</p>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
+
 
         {/* Prompt input */}
         <div className="bg-white rounded-xl border border-[rgba(12,10,9,0.10)] shadow-sm p-5 mb-4">
