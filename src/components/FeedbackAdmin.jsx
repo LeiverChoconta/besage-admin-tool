@@ -1030,40 +1030,42 @@ const DemographicsTab = ({ d }) => {
     );
   };
 
-  // Chart 3 — Dispositivo: Big metric side-by-side
-  const DeviceMetrics = () => (
-    <div style={{ display:"flex", gap:12, height:"100%" }}>
-      {d.devices.map(dev => (
-        <div key={dev.name} style={{
-          flex:1, background:BDS.neutral[50], borderRadius:8, padding:"16px 12px",
-          display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
-          border:`1px solid ${T.borderSoft}`,
-        }}>
-          <span style={{ fontSize:28, fontWeight:800, color:dev.fill, fontFamily:"'DM Mono', monospace", lineHeight:1 }}>{dev.value}%</span>
-          <span style={{ fontSize:11, color:T.textMuted, marginTop:6, fontWeight:600 }}>{dev.name}</span>
-        </div>
-      ))}
-    </div>
-  );
+  // Chart 3 — Dispositivo: Segmented horizontal bar (like gender but vertical stack)
+  const DeviceBar = () => {
+    const total = d.devices.reduce((s,dev) => s + dev.value, 0);
+    return (
+      <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+        {d.devices.map(dev => (
+          <div key={dev.name}>
+            <div style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}>
+              <span style={{ fontSize:12, fontWeight:600, color:T.textPrimary }}>{dev.name}</span>
+              <span style={{ fontSize:12, fontWeight:700, color:dev.fill, fontFamily:"'DM Mono', monospace" }}>{dev.value}%</span>
+            </div>
+            <div style={{ height:8, background:BDS.neutral[100], borderRadius:4, overflow:"hidden" }}>
+              <div style={{ height:"100%", width:`${(dev.value/total)*100}%`, background:dev.fill, borderRadius:4, transition:"width 0.3s" }}/>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
 
-  // Chart 5 — Cargo/Rol: Treemap-style tag blocks
-  const RoleGrid = () => {
+  // Chart 5 — Cargo/Rol: Ranked list with position numbers
+  const RoleRanked = () => {
     const maxRole = Math.max(...d.jobRoles.map(j=>j.value));
     return (
-      <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
-        {d.jobRoles.map(j => {
-          const size = 0.5 + (j.value / maxRole) * 0.5; // scale 0.5–1
-          return (
-            <div key={j.role} style={{
-              padding:"6px 10px", borderRadius:6,
-              background:`${j.fill}14`, border:`1px solid ${j.fill}30`,
-              display:"flex", alignItems:"center", gap:6,
-            }}>
-              <span style={{ fontSize: Math.round(10 + size * 3), fontWeight:600, color:j.fill, fontFamily:"'DM Mono', monospace" }}>{j.value}%</span>
-              <span style={{ fontSize:10, color:T.textPrimary, fontWeight:500 }}>{j.role}</span>
+      <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+        {d.jobRoles.map((j, i) => (
+          <div key={j.role} style={{ display:"flex", alignItems:"center", gap:8 }}>
+            <span style={{ fontSize:10, fontWeight:700, color:BDS.neutral[300], fontFamily:"'DM Mono', monospace", width:14, textAlign:"right", flexShrink:0 }}>{i+1}</span>
+            <div style={{ width:4, height:4, borderRadius:"50%", background:j.fill, flexShrink:0 }}/>
+            <span style={{ fontSize:11, color:T.textPrimary, flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{j.role}</span>
+            <div style={{ width:48, height:4, background:BDS.neutral[100], borderRadius:2, overflow:"hidden", flexShrink:0 }}>
+              <div style={{ height:"100%", width:`${(j.value/maxRole)*100}%`, background:j.fill, borderRadius:2 }}/>
             </div>
-          );
-        })}
+            <span style={{ fontSize:11, fontWeight:700, color:j.fill, fontFamily:"'DM Mono', monospace", width:28, textAlign:"right", flexShrink:0 }}>{j.value}%</span>
+          </div>
+        ))}
       </div>
     );
   };
@@ -1081,22 +1083,27 @@ const DemographicsTab = ({ d }) => {
 
         <div style={cardStyle}>
           <p style={labelStyle}>Grupos de edad</p>
-          <ResponsiveContainer width="100%" height={140}>
-            <BarChart data={d.ageGroups} margin={{ top:4, right:4, bottom:0, left:-20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke={BDS.neutral[100]} vertical={false}/>
-              <XAxis dataKey="age" tick={{ fill:T.textMuted, fontSize:9 }} axisLine={false} tickLine={false}/>
-              <YAxis tick={{ fill:T.textMuted, fontSize:10 }} axisLine={false} tickLine={false} unit="%"/>
-              <Tooltip content={<ChartTooltip unit="%"/>}/>
-              <Bar dataKey="value" name="%" radius={[4,4,0,0]}>
+          <ResponsiveContainer width="100%" height={130}>
+            <PieChart>
+              <Pie data={d.ageGroups} cx="50%" cy="50%" innerRadius={36} outerRadius={54} dataKey="value" paddingAngle={3} nameKey="age">
                 {d.ageGroups.map((e,i) => <Cell key={i} fill={e.fill}/>)}
-              </Bar>
-            </BarChart>
+              </Pie>
+              <Tooltip content={<ChartTooltip unit="%"/>}/>
+            </PieChart>
           </ResponsiveContainer>
+          <div style={{ display:"flex", flexWrap:"wrap", justifyContent:"center", gap:"4px 10px", marginTop:6 }}>
+            {d.ageGroups.map(e => (
+              <div key={e.age} style={{ display:"flex", alignItems:"center", gap:4, fontSize:10, color:T.textMuted }}>
+                <span style={{ width:6, height:6, borderRadius:2, background:e.fill, flexShrink:0 }}/>
+                {e.age}
+              </div>
+            ))}
+          </div>
         </div>
 
         <div style={cardStyle}>
           <p style={labelStyle}>Dispositivo</p>
-          <DeviceMetrics/>
+          <DeviceBar/>
         </div>
       </div>
 
@@ -1120,7 +1127,7 @@ const DemographicsTab = ({ d }) => {
 
         <div style={cardStyle}>
           <p style={labelStyle}>Cargo / Rol</p>
-          <RoleGrid/>
+          <RoleRanked/>
         </div>
 
         <div style={cardStyle}>
