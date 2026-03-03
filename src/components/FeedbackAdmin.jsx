@@ -1002,14 +1002,34 @@ const PlanLineChart = ({ data }) => (
 
 const DemographicsTab = ({ d }) => {
   const maxRole = Math.max(...d.jobRoles.map(j=>j.value));
+  const maxAge  = Math.max(...d.ageGroups.map(a=>a.value));
+  const maxCountry = Math.max(...d.countries.map(c=>c.value));
+
+  const cardStyle = { background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, padding:"18px 20px", boxShadow:"0 1px 3px rgba(12,10,9,0.04)" };
+  const labelStyle = { fontSize:11, fontWeight:700, color:T.textMuted, textTransform:"uppercase", letterSpacing:"0.08em", margin:"0 0 12px" };
+
+  const HBarList = ({ items, maxVal, nameKey="name", valKey="value", colorKey="fill", unit="%" }) => (
+    <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+      {items.map(item => (
+        <div key={item[nameKey]} style={{ display:"flex", alignItems:"center", gap:10 }}>
+          <span style={{ fontSize:11, color:T.textMuted, width:120, flexShrink:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{item[nameKey]}</span>
+          <div style={{ flex:1, height:6, background:BDS.neutral[100], borderRadius:4, overflow:"hidden" }}>
+            <div style={{ height:"100%", width:`${(item[valKey]/maxVal)*100}%`, background:item[colorKey], borderRadius:4, transition:"width 0.3s ease" }}/>
+          </div>
+          <span style={{ fontSize:11, fontWeight:700, color:item[colorKey], fontFamily:"'DM Mono', monospace", width:32, textAlign:"right", flexShrink:0 }}>{item[valKey]}{unit}</span>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
 
-      {/* Row 1 — 3 cols: Género · Edad · Dispositivo */}
+      {/* Row 1 — 3 cols: Género · Grupos de edad · Dispositivo */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16 }}>
 
-        <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, padding:"18px 20px", boxShadow:"0 1px 3px rgba(12,10,9,0.04)" }}>
-          <p style={{ fontSize:11, fontWeight:700, color:T.textMuted, textTransform:"uppercase", letterSpacing:"0.08em", margin:"0 0 10px" }}>Género</p>
+        <div style={cardStyle}>
+          <p style={labelStyle}>Género</p>
           <ResponsiveContainer width="100%" height={130}>
             <PieChart>
               <Pie data={d.gender} cx="50%" cy="50%" innerRadius={36} outerRadius={54} dataKey="value" paddingAngle={3}>
@@ -1028,23 +1048,13 @@ const DemographicsTab = ({ d }) => {
           </div>
         </div>
 
-        <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, padding:"18px 20px", boxShadow:"0 1px 3px rgba(12,10,9,0.04)" }}>
-          <p style={{ fontSize:11, fontWeight:700, color:T.textMuted, textTransform:"uppercase", letterSpacing:"0.08em", margin:"0 0 10px" }}>Grupos de edad</p>
-          <ResponsiveContainer width="100%" height={160}>
-            <BarChart data={d.ageGroups} margin={{ top:4, right:4, bottom:0, left:-20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke={BDS.neutral[100]} vertical={false}/>
-              <XAxis dataKey="age" tick={{ fill:T.textMuted, fontSize:9 }} axisLine={false} tickLine={false}/>
-              <YAxis tick={{ fill:T.textMuted, fontSize:10 }} axisLine={false} tickLine={false} unit="%"/>
-              <Tooltip content={<ChartTooltip unit="%"/>}/>
-              <Bar dataKey="value" name="%" radius={[4,4,0,0]}>
-                {d.ageGroups.map((e,i) => <Cell key={i} fill={e.fill}/>)}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+        <div style={cardStyle}>
+          <p style={labelStyle}>Grupos de edad</p>
+          <HBarList items={d.ageGroups} maxVal={maxAge} nameKey="age" colorKey="fill"/>
         </div>
 
-        <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, padding:"18px 20px", boxShadow:"0 1px 3px rgba(12,10,9,0.04)" }}>
-          <p style={{ fontSize:11, fontWeight:700, color:T.textMuted, textTransform:"uppercase", letterSpacing:"0.08em", margin:"0 0 10px" }}>Dispositivo</p>
+        <div style={cardStyle}>
+          <p style={labelStyle}>Dispositivo</p>
           <ResponsiveContainer width="100%" height={130}>
             <PieChart>
               <Pie data={d.devices} cx="50%" cy="50%" innerRadius={36} outerRadius={54} dataKey="value" paddingAngle={3}>
@@ -1064,49 +1074,38 @@ const DemographicsTab = ({ d }) => {
         </div>
       </div>
 
-      {/* Row 2 — 2 cols: País · Cargo/Rol */}
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
+      {/* Row 2 — 3 cols: País · Cargo/Rol · Respuestas por plan */}
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16 }}>
 
-        <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, padding:"18px 20px", boxShadow:"0 1px 3px rgba(12,10,9,0.04)" }}>
-          <p style={{ fontSize:11, fontWeight:700, color:T.textMuted, textTransform:"uppercase", letterSpacing:"0.08em", margin:"0 0 10px" }}>País</p>
+        <div style={cardStyle}>
+          <p style={labelStyle}>País</p>
+          <HBarList items={d.countries} maxVal={maxCountry} nameKey="name" valKey="value" colorKey="color"/>
+        </div>
+
+        <div style={cardStyle}>
+          <p style={labelStyle}>Cargo / Rol</p>
+          <HBarList items={d.jobRoles} maxVal={maxRole} nameKey="role" colorKey="fill"/>
+        </div>
+
+        <div style={cardStyle}>
+          <p style={labelStyle}>Respuestas por plan</p>
           <ResponsiveContainer width="100%" height={130}>
             <PieChart>
-              <Pie data={d.countries} cx="50%" cy="50%" innerRadius={36} outerRadius={54} dataKey="value" paddingAngle={3}>
-                {d.countries.map((e,i) => <Cell key={i} fill={e.color}/>)}
+              <Pie data={d.plans} cx="50%" cy="50%" innerRadius={36} outerRadius={54} dataKey="value" paddingAngle={3}>
+                {d.plans.map((e,i) => <Cell key={i} fill={e.fill}/>)}
               </Pie>
               <Tooltip content={<ChartTooltip unit="%"/>}/>
             </PieChart>
           </ResponsiveContainer>
           <div style={{ display:"flex", flexWrap:"wrap", justifyContent:"center", gap:"4px 10px", marginTop:6 }}>
-            {d.countries.map(e => (
+            {d.plans.map(e => (
               <div key={e.name} style={{ display:"flex", alignItems:"center", gap:4, fontSize:11, color:T.textMuted }}>
-                <span style={{ width:6, height:6, borderRadius:2, background:e.color, flexShrink:0 }}/>
-                {e.name}
+                <span style={{ width:6, height:6, borderRadius:2, background:e.fill, flexShrink:0 }}/>
+                {e.name} ({e.value}%)
               </div>
             ))}
           </div>
         </div>
-
-        <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, padding:"18px 20px", boxShadow:"0 1px 3px rgba(12,10,9,0.04)" }}>
-          <p style={{ fontSize:11, fontWeight:700, color:T.textMuted, textTransform:"uppercase", letterSpacing:"0.08em", margin:"0 0 12px" }}>Cargo / Rol</p>
-          <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-            {d.jobRoles.map(j => (
-              <div key={j.role} style={{ display:"flex", alignItems:"center", gap:10 }}>
-                <span style={{ fontSize:11, color:T.textMuted, width:128, flexShrink:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{j.role}</span>
-                <div style={{ flex:1, height:6, background:BDS.neutral[100], borderRadius:4, overflow:"hidden" }}>
-                  <div style={{ height:"100%", width:`${(j.value/maxRole)*100}%`, background:j.fill, borderRadius:4 }}/>
-                </div>
-                <span style={{ fontSize:11, fontWeight:700, color:j.fill, fontFamily:"'DM Mono', monospace", width:28, textAlign:"right", flexShrink:0 }}>{j.value}%</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Row 3 — full width: Respuestas por plan */}
-      <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, padding:"18px 20px", boxShadow:"0 1px 3px rgba(12,10,9,0.04)" }}>
-        <p style={{ fontSize:11, fontWeight:700, color:T.textMuted, textTransform:"uppercase", letterSpacing:"0.08em", margin:"0 0 12px" }}>Respuestas por plan</p>
-        <PlanLineChart data={d.planTrend}/>
       </div>
     </div>
   );
