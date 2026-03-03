@@ -2435,8 +2435,10 @@ const AssessmentBuilder = ({ onBack }) => {
                   {/* Number */}
                   <span style={{ fontSize:11, fontWeight:700, color:T.textMuted, fontFamily:"'DM Mono', monospace", width:22, flexShrink:0, paddingTop:2 }}>{idx+1}</span>
                   {/* Text */}
-                  <p style={{ flex:1, fontSize:13, color:T.textPrimary, margin:0, lineHeight:1.5 }} dir={isRTL(q.text)?"rtl":"ltr"}>{q.text}</p>
-
+                  <div style={{ flex:1 }}>
+                    <p style={{ fontSize:13, color:T.textPrimary, margin:"0 0 6px", lineHeight:1.5 }} dir={isRTL(q.text)?"rtl":"ltr"}>{q.text}</p>
+                    <SkillTag skillId={q.skill}/>
+                  </div>
                 </div>
               );
             })}
