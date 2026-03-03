@@ -1,4 +1,6 @@
 import React, { useState, useRef } from "react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { NoteIcon, BrainIcon, Flag01Icon, Settings01Icon, UserGroupIcon, BarCode01Icon } from "@hugeicons/core-free-icons";
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   LineChart, Line,
@@ -2984,16 +2986,16 @@ const NAV_SECTIONS = [
   {
     label: "Product",
     items: [
-      { id:"surveys",     label:"Surveys",        icon:"📋", page:"surveys"     },
-      { id:"assessments", label:"Assessments",     icon:"🧠", page:"assessments" },
-      { id:"flags",       label:"Feature Flags",   icon:"🚩", page:"flags"       },
+      { id:"surveys",     label:"Surveys",        icon:NoteIcon,     page:"surveys"     },
+      { id:"assessments", label:"Assessments",     icon:BrainIcon,    page:"assessments" },
+      { id:"flags",       label:"Feature Flags",   icon:Flag01Icon,   page:"flags"       },
     ],
   },
   {
     label: "Settings",
     items: [
-      { id:"settings", label:"Configuración",  icon:"⚙️", page:"settings" },
-      { id:"team",     label:"Equipo",          icon:"👥", page:"team"     },
+      { id:"settings", label:"Configuración",  icon:Settings01Icon, page:"settings" },
+      { id:"team",     label:"Equipo",          icon:UserGroupIcon,  page:"team"     },
     ],
   },
 ];
@@ -3014,8 +3016,7 @@ const Sidebar = ({ page, setPage, view, goToSurveys, goToBuilder }) => {
         <div style={{
           width:28, height:28, borderRadius:8, background:BDS.primary[500],
           display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0,
-          fontSize:13,
-        }}>📋</div>
+        }}><HugeiconsIcon icon={BarCode01Icon} size={16} color="#fff" strokeWidth={2}/></div>
         <div style={{ minWidth:0 }}>
           <p style={{ fontWeight:700, color:BDS.neutral["000"], fontSize:13, margin:0, lineHeight:1.3, letterSpacing:"-0.01em" }}>Feedback Admin</p>
           <p style={{ fontSize:10, color:"rgba(255,255,255,0.4)", margin:0, lineHeight:1.3 }}>iLeader · Internal</p>
@@ -3050,7 +3051,9 @@ const Sidebar = ({ page, setPage, view, goToSurveys, goToBuilder }) => {
                   onMouseEnter={e => { if(!isActive && !isDisabled) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
                   onMouseLeave={e => { if(!isActive) e.currentTarget.style.background = "transparent"; }}
                 >
-                  <span style={{ fontSize:15, lineHeight:1, width:18, textAlign:"center", flexShrink:0 }}>{item.icon}</span>
+                  <span style={{ lineHeight:1, width:18, textAlign:"center", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                    <HugeiconsIcon icon={item.icon} size={16} color="currentColor" strokeWidth={1.8}/>
+                  </span>
                   <span style={{ fontSize:13, fontWeight: isActive ? 600 : 500, flex:1, textAlign:"left" }}>{item.label}</span>
                   {isActive && <span style={{ width:5, height:5, borderRadius:"50%", background:BDS.primary[400], flexShrink:0 }}/>}
                 </button>
