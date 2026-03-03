@@ -1209,8 +1209,8 @@ const RespondentTable = ({ survey }) => {
   const paged = respondents.slice((page - 1) * pageSize, page * pageSize);
 
   return (
-    <div style={{ position:"relative" }}>
-      <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, overflow:"hidden", boxShadow:"0 1px 3px rgba(12,10,9,0.04)", maxHeight:"calc(100vh - 260px)", overflowY:"auto" }}>
+    <div style={{ position:"relative", flex:1, minHeight:0, display:"flex", flexDirection:"column" }}>
+      <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, overflow:"hidden", boxShadow:"0 1px 3px rgba(12,10,9,0.04)", flex:1, minHeight:0, display:"flex", flexDirection:"column", overflowY:"auto" }}>
         <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
           <thead>
             <tr style={{ borderBottom:`1px solid ${T.borderSoft}`, background:BDS.neutral[50] }}>
@@ -1573,7 +1573,7 @@ const SurveyList = ({ onSelect, onCreate }) => {
   const handleFilterChange = (key) => { setFilter(key); setPage(1); };
 
   return (
-    <div>
+    <div style={{ display:"flex", flexDirection:"column", height:"100%" }}>
       <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:24 }}>
         <div>
           <h1 style={{ fontSize:22, fontWeight:800, color:T.textPrimary, margin:0, letterSpacing:"-0.02em" }}>
@@ -1607,7 +1607,7 @@ const SurveyList = ({ onSelect, onCreate }) => {
         ))}
       </div>
 
-      <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, overflow:"hidden", boxShadow:"0 1px 3px rgba(12,10,9,0.06)", maxHeight:"calc(100vh - 300px)", overflowY:"auto" }}>
+      <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, overflow:"hidden", boxShadow:"0 1px 3px rgba(12,10,9,0.06)", flex:1, minHeight:0, display:"flex", flexDirection:"column", overflowY:"auto" }}>
         <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
           <thead>
             <tr style={{ borderBottom:`1px solid ${T.borderSoft}`, background:BDS.neutral[50] }}>
@@ -1853,7 +1853,7 @@ const SurveyOverview = ({ survey, onBack, tab, setTab }) => {
   ];
 
   return (
-    <div>
+    <div style={{ display:"flex", flexDirection:"column", height:"100%" }}>
       {/* Header */}
       <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:24 }}>
         <div>
@@ -1911,7 +1911,7 @@ const SurveyOverview = ({ survey, onBack, tab, setTab }) => {
 
       {/* Tab: Respondents */}
       {tab==="respondents" && (
-        <div style={{ animation:"fadeUp 0.25s ease" }}>
+        <div style={{ animation:"fadeUp 0.25s ease", flex:1, minHeight:0, display:"flex", flexDirection:"column" }}>
           <RespondentTable survey={survey}/>
         </div>
       )}
@@ -2295,7 +2295,7 @@ const AssessmentList = ({ onSelect, onCreate }) => {
   const handleFilterChange = (key) => { setFilter(key); setPage(1); };
 
   return (
-    <div>
+    <div style={{ display:"flex", flexDirection:"column", height:"100%" }}>
       <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:24 }}>
         <div>
           <h1 style={{ fontSize:22, fontWeight:800, color:T.textPrimary, margin:0, letterSpacing:"-0.02em" }}>
@@ -2331,7 +2331,7 @@ const AssessmentList = ({ onSelect, onCreate }) => {
       </div>
 
       {/* Table */}
-      <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, overflow:"hidden", boxShadow:"0 1px 3px rgba(12,10,9,0.06)", maxHeight:"calc(100vh - 300px)", overflowY:"auto" }}>
+      <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, overflow:"hidden", boxShadow:"0 1px 3px rgba(12,10,9,0.06)", flex:1, minHeight:0, display:"flex", flexDirection:"column", overflowY:"auto" }}>
         <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
           <thead>
             <tr style={{ borderBottom:`1px solid ${T.borderSoft}`, background:BDS.neutral[50] }}>
@@ -2650,7 +2650,7 @@ const AssessmentOverview = ({ assessment, onBack }) => {
   ];
 
   return (
-    <div style={{ position:"relative" }}>
+    <div style={{ position:"relative", display:"flex", flexDirection:"column", height:"100%" }}>
       {/* Header */}
       <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:24 }}>
         <div>
@@ -2800,8 +2800,8 @@ const AssessmentOverview = ({ assessment, onBack }) => {
       {tab==="respondents" && (() => {
         const pagedResp = respondents.slice((assPage - 1) * assPageSize, assPage * assPageSize);
         return (
-        <div style={{ animation:"fadeUp 0.25s ease" }}>
-          <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, overflow:"hidden", boxShadow:"0 1px 3px rgba(12,10,9,0.04)", maxHeight:"calc(100vh - 340px)", overflowY:"auto" }}>
+        <div style={{ animation:"fadeUp 0.25s ease", flex:1, minHeight:0, display:"flex", flexDirection:"column" }}>
+          <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, overflow:"hidden", boxShadow:"0 1px 3px rgba(12,10,9,0.04)", flex:1, minHeight:0, display:"flex", flexDirection:"column", overflowY:"auto" }}>
             <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
               <thead>
                 <tr style={{ borderBottom:`1px solid ${T.borderSoft}`, background:BDS.neutral[50] }}>
@@ -3086,7 +3086,7 @@ export default function FeedbackAdmin() {
         .line-clamp-3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
       `}</style>
 
-      <div className="flex min-h-screen" style={{ fontFamily:"'Inter', sans-serif", background:BDS.neutral[100] }}>
+      <div style={{ fontFamily:"'Inter', sans-serif", background:BDS.neutral[100], display:"flex", height:"100vh", overflow:"hidden" }}>
 
         {/* Sidebar */}
         <Sidebar
@@ -3097,7 +3097,7 @@ export default function FeedbackAdmin() {
         />
 
         {/* Right panel */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div style={{ flex:1, display:"flex", flexDirection:"column", minWidth:0, height:"100vh", overflow:"hidden" }}>
 
           {/* Top bar */}
           <header style={{
@@ -3134,7 +3134,7 @@ export default function FeedbackAdmin() {
           </header>
 
           {/* Page content */}
-          <main className="flex-1 px-8 py-8">
+          <main style={{ flex:1, padding:"32px", overflowY:"auto", overflowX:"hidden", display:"flex", flexDirection:"column" }}>
             {page==="surveys" && (
               <>
                 {view==="list"    && <SurveyList onSelect={handleSelect} onCreate={goToBuilder}/>}
