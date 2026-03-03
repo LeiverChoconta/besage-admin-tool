@@ -1020,23 +1020,23 @@ const DemographicsTab = ({ d }) => {
   const cardStyle = { background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, padding:"18px 20px", boxShadow:"0 1px 3px rgba(12,10,9,0.04)" };
   const labelStyle = { fontSize:11, fontWeight:700, color:T.textMuted, textTransform:"uppercase", letterSpacing:"0.08em", margin:"0 0 12px" };
 
-  // Chart 1 — Género: Segmented horizontal bar
-  const GenderBar = () => {
-    const total = d.gender.reduce((s,g) => s + g.value, 0);
+  // Chart 1 — Género: Donut chart
+  const GenderDonut = () => {
     return (
       <div>
-        <div style={{ display:"flex", height:28, borderRadius:6, overflow:"hidden", marginBottom:10 }}>
-          {d.gender.map((g,i) => (
-            <div key={i} style={{ width:`${(g.value/total)*100}%`, background:g.fill, transition:"width 0.3s", position:"relative", display:"flex", alignItems:"center", justifyContent:"center" }}>
-              {g.value >= 10 && <span style={{ fontSize:10, fontWeight:700, color:"#fff", fontFamily:"'DM Mono', monospace" }}>{g.value}%</span>}
-            </div>
-          ))}
-        </div>
-        <div style={{ display:"flex", flexWrap:"wrap", gap:"4px 12px" }}>
+        <ResponsiveContainer width="100%" height={120}>
+          <PieChart>
+            <Pie data={d.gender} cx="50%" cy="50%" innerRadius={30} outerRadius={46} dataKey="value" paddingAngle={3}>
+              {d.gender.map((e,i) => <Cell key={i} fill={e.fill}/>)}
+            </Pie>
+            <Tooltip content={<ChartTooltip unit="%"/>}/>
+          </PieChart>
+        </ResponsiveContainer>
+        <div style={{ display:"flex", flexWrap:"wrap", justifyContent:"center", gap:"4px 12px", marginTop:4 }}>
           {d.gender.map(e => (
             <div key={e.name} style={{ display:"flex", alignItems:"center", gap:4, fontSize:11, color:T.textMuted }}>
               <span style={{ width:6, height:6, borderRadius:2, background:e.fill, flexShrink:0 }}/>
-              {e.name}
+              {e.name} ({e.value}%)
             </div>
           ))}
         </div>
@@ -1092,7 +1092,7 @@ const DemographicsTab = ({ d }) => {
 
         <div style={cardStyle}>
           <p style={labelStyle}>Género</p>
-          <GenderBar/>
+          <GenderDonut/>
         </div>
 
         <div style={cardStyle}>
