@@ -1,73 +1,130 @@
-# Welcome to your Lovable project
+# 🛠️ Besage Admin Tool
 
-## Project info
+> **Hackathon Experiment** — Internal admin panel for managing Besage's product suite.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+Besage Admin Tool is a centralized web dashboard built to give the Besage team operational control over its two main platforms: **iLeader.ai** (B2B leadership coaching) and **AllYourSenses.ai** (adult audio content). From a single interface, admins can monitor key metrics, manage users, and oversee content across both products.
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## 🎯 Purpose
 
-**Use Lovable**
+This tool was born as a Hackathon experiment to answer a simple question: *what if both products shared one unified admin layer?*
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+Instead of managing each platform in isolation, Besage Admin Tool connects to the external APIs of iLeader and AYS to provide a single pane of glass for:
 
-Changes made via Lovable will be committed automatically to this repo.
+- 📊 **Dashboard** — Real-time metrics and KPIs across both platforms
+- 👥 **User Management** — View, filter, and manage users from iLeader and AYS
+- 📝 **Content Management** — Oversee messages, stories, and platform-specific content
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🧱 Tech Stack
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+| Layer | Technology |
+|---|---|
+| Framework | React 18 |
+| Language | TypeScript |
+| Build Tool | Vite |
+| UI Components | shadcn/ui |
+| Styling | Tailwind CSS |
+| Testing | Vitest |
+| Package Manager | npm / bun |
 
-Follow these steps:
+---
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## 🚀 Getting Started
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### Prerequisites
 
-# Step 3: Install the necessary dependencies.
-npm i
+- Node.js `>= 18.x`
+- npm or bun installed
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+### Installation
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/LeiverChoconta/besage-admin-tool.git
+
+# 2. Navigate into the project
+cd besage-admin-tool
+
+# 3. Install dependencies
+npm install
+
+# 4. Start the development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The app will be available at `http://localhost:5173`.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+---
 
-**Use GitHub Codespaces**
+## 🔌 API Integration
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+This tool is **frontend-only** and relies on external APIs provided by the Besage backend services. Make sure you have access to the required API endpoints for both iLeader and AYS before running the project in a real environment.
 
-## What technologies are used for this project?
+> For the Hackathon demo, some data may be mocked or seeded locally.
 
-This project is built with:
+---
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 📁 Project Structure
 
-## How can I deploy this project?
+```
+besage-admin-tool/
+├── public/              # Static assets
+├── src/
+│   ├── components/      # Reusable UI components (shadcn/ui based)
+│   ├── pages/           # Route-level views (Dashboard, Users, Content)
+│   ├── hooks/           # Custom React hooks
+│   ├── lib/             # Utilities and API helpers
+│   └── main.tsx         # App entry point
+├── index.html
+├── vite.config.ts
+├── tailwind.config.ts
+└── vitest.config.ts
+```
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+---
 
-## Can I connect a custom domain to my Lovable project?
+## 🧪 Running Tests
 
-Yes, you can!
+```bash
+npm run test
+```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+Tests are powered by [Vitest](https://vitest.dev/), co-located with components where relevant.
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+---
+
+## 🌐 Platforms Managed
+
+| Platform | Description |
+|---|---|
+| [iLeader.ai](https://ileader.ai) | B2B coaching and leadership development platform |
+| [AllYourSenses.ai](https://allyoursenses.ai) | Adult audio content and storytelling platform |
+
+---
+
+## ⚠️ Hackathon Context
+
+This project was built as an internal experiment during a Hackathon sprint. It is **not production-ready** and may contain:
+
+- Incomplete features or placeholder UI
+- Mocked or hardcoded data
+- Limited error handling
+- No authentication layer (yet)
+
+The goal was to validate the concept of a unified admin panel for Besage's product suite. Future iterations may evolve this into a production tool.
+
+---
+
+## 👤 Author
+
+**Leiver Choconta** — Product Design & Development at Besage  
+[GitHub @LeiverChoconta](https://github.com/LeiverChoconta)
+
+---
+
+## 📄 License
+
+This project is private and intended for internal use by the Besage team.
