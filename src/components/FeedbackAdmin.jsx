@@ -498,6 +498,94 @@ const ChartTooltip = ({ active, payload, label, unit="" }) => {
   );
 };
 
+// ─── TABLE PAGINATION ─────────────────────────────────────────────────────────
+const PAGE_SIZE_OPTIONS = [25, 50, 100];
+
+const TablePagination = ({ total, page, pageSize, onPageChange, onPageSizeChange }) => {
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const from = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const to = Math.min(page * pageSize, total);
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisible = 5;
+    let start = Math.max(1, page - Math.floor(maxVisible / 2));
+    let end = Math.min(totalPages, start + maxVisible - 1);
+    if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
+    if (start > 1) { pages.push(1); if (start > 2) pages.push("..."); }
+    for (let i = start; i <= end; i++) pages.push(i);
+    if (end < totalPages) { if (end < totalPages - 1) pages.push("..."); pages.push(totalPages); }
+    return pages;
+  };
+
+  const btnBase = {
+    display:"inline-flex", alignItems:"center", justifyContent:"center",
+    minWidth:32, height:32, borderRadius:6, border:"none", cursor:"pointer",
+    fontSize:12, fontWeight:600, fontFamily:"'DM Mono', monospace",
+    transition:"all 0.15s",
+  };
+
+  return (
+    <div style={{
+      display:"flex", alignItems:"center", justifyContent:"space-between",
+      padding:"12px 16px", borderTop:`1px solid ${T.borderSoft}`,
+      background:BDS.neutral[50],
+    }}>
+      {/* Left: page size selector */}
+      <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+        <span style={{ fontSize:12, color:T.textMuted }}>Mostrar</span>
+        <div style={{ display:"flex", gap:2 }}>
+          {PAGE_SIZE_OPTIONS.map(size => (
+            <button key={size} onClick={() => onPageSizeChange(size)}
+              style={{
+                ...btnBase,
+                minWidth:36,
+                background: pageSize === size ? BDS.secondary[950] : BDS.neutral["000"],
+                color: pageSize === size ? "#fff" : BDS.neutral[500],
+                boxShadow: pageSize === size ? "none" : `0 0 0 1px ${T.borderSoft}`,
+              }}>
+              {size}
+            </button>
+          ))}
+        </div>
+        <span style={{ fontSize:12, color:T.textMuted }}>por página</span>
+      </div>
+
+      {/* Center: info */}
+      <span style={{ fontSize:12, color:T.textMuted, fontFamily:"'DM Mono', monospace" }}>
+        {total === 0 ? "Sin resultados" : `${from}–${to} de ${total}`}
+      </span>
+
+      {/* Right: page navigation */}
+      <div style={{ display:"flex", alignItems:"center", gap:4 }}>
+        <button onClick={() => onPageChange(page - 1)} disabled={page <= 1}
+          style={{ ...btnBase, background:"transparent", color: page <= 1 ? BDS.neutral[200] : T.textMuted, cursor: page <= 1 ? "not-allowed" : "pointer" }}>
+          ‹
+        </button>
+        {getPageNumbers().map((p, i) =>
+          p === "..." ? (
+            <span key={`dots-${i}`} style={{ ...btnBase, background:"transparent", color:T.textMuted, cursor:"default" }}>…</span>
+          ) : (
+            <button key={p} onClick={() => onPageChange(p)}
+              style={{
+                ...btnBase,
+                background: p === page ? BDS.primary[500] : "transparent",
+                color: p === page ? "#fff" : T.textMuted,
+                boxShadow: p === page ? "0 1px 4px rgba(226,101,0,0.3)" : "none",
+              }}>
+              {p}
+            </button>
+          )
+        )}
+        <button onClick={() => onPageChange(page + 1)} disabled={page >= totalPages}
+          style={{ ...btnBase, background:"transparent", color: page >= totalPages ? BDS.neutral[200] : T.textMuted, cursor: page >= totalPages ? "not-allowed" : "pointer" }}>
+          ›
+        </button>
+      </div>
+    </div>
+  );
+};
+
 // ─── REACH BAR — universal ────────────────────────────────────────────────────
 const ReachBar = ({ reach }) => {
   const { visitors, respondents } = reach;
@@ -1112,8 +1200,12 @@ const TextAnswer = ({ value }) => (
 
 const RespondentTable = ({ survey }) => {
   const [sidesheet, setSidesheet] = useState(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
   const questions   = getSurveyQuestions(survey);
-  const respondents = generateRespondents(survey, 30);
+  const respondents = generateRespondents(survey, 120);
+
+  const paged = respondents.slice((page - 1) * pageSize, page * pageSize);
 
   return (
     <div style={{ position:"relative" }}>
@@ -1127,10 +1219,10 @@ const RespondentTable = ({ survey }) => {
             </tr>
           </thead>
           <tbody>
-            {respondents.map((r, i) => (
+            {paged.map((r, i) => (
               <tr key={r.id}
                 onClick={() => setSidesheet(r)}
-                style={{ borderBottom: i < respondents.length-1 ? `1px solid ${T.borderSoft}` : "none", cursor:"pointer", transition:"background 0.12s" }}
+                style={{ borderBottom: i < paged.length-1 ? `1px solid ${T.borderSoft}` : "none", cursor:"pointer", transition:"background 0.12s" }}
                 onMouseEnter={e => { e.currentTarget.style.background = BDS.neutral[50]; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
               >
@@ -1152,6 +1244,8 @@ const RespondentTable = ({ survey }) => {
             ))}
           </tbody>
         </table>
+        <TablePagination total={respondents.length} page={page} pageSize={pageSize}
+          onPageChange={p => setPage(p)} onPageSizeChange={s => { setPageSize(s); setPage(1); }}/>
       </div>
 
       {/* Sidesheet */}
@@ -1465,12 +1559,17 @@ const Breadcrumbs = ({ crumbs }) => (
 // ─── VIEW 1: SURVEY LIST ──────────────────────────────────────────────────────
 const SurveyList = ({ onSelect, onCreate }) => {
   const [filter,setFilter] = useState("all");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
   const filtered = filter==="all" ? SURVEYS : SURVEYS.filter(s=>s.status===filter);
+  const paged = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   const filters = [
     {key:"all",label:"Todas"},{key:"published",label:"Publicadas"},
     {key:"draft",label:"Borradores"},{key:"deprecated",label:"Cerradas"},
   ];
+
+  const handleFilterChange = (key) => { setFilter(key); setPage(1); };
 
   return (
     <div>
@@ -1497,7 +1596,7 @@ const SurveyList = ({ onSelect, onCreate }) => {
 
       <div style={{ display:"flex", gap:6, marginBottom:16 }}>
         {filters.map(f => (
-          <button key={f.key} onClick={()=>setFilter(f.key)} style={{
+          <button key={f.key} onClick={()=>handleFilterChange(f.key)} style={{
             padding:"5px 12px", borderRadius:6, border:"none", cursor:"pointer",
             fontSize:12, fontWeight:600, fontFamily:"inherit", transition:"all 0.15s",
             background: filter===f.key ? BDS.secondary[950] : BDS.neutral["000"],
@@ -1517,11 +1616,11 @@ const SurveyList = ({ onSelect, onCreate }) => {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((s, i) => (
+            {paged.map((s, i) => (
               <tr key={s.id}
                 onClick={() => s.status !== "draft" && onSelect(s)}
                 style={{
-                  borderBottom: i < filtered.length-1 ? `1px solid ${T.borderSoft}` : "none",
+                  borderBottom: i < paged.length-1 ? `1px solid ${T.borderSoft}` : "none",
                   cursor: s.status==="draft" ? "default" : "pointer",
                   opacity: s.status==="draft" ? 0.55 : 1,
                   transition:"background 0.12s",
@@ -1544,6 +1643,8 @@ const SurveyList = ({ onSelect, onCreate }) => {
             ))}
           </tbody>
         </table>
+        <TablePagination total={filtered.length} page={page} pageSize={pageSize}
+          onPageChange={p => setPage(p)} onPageSizeChange={s => { setPageSize(s); setPage(1); }}/>
       </div>
     </div>
   );
@@ -2179,6 +2280,8 @@ const AssStatusBadge = ({ status }) => {
 // ─── ASSESSMENT LIST ──────────────────────────────────────────────────────────
 const AssessmentList = ({ onSelect, onCreate }) => {
   const [filter, setFilter] = useState("all");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
   const filters = [
     { key:"all", label:"Todos" },
     { key:"published",  label:"Publicados" },
@@ -2186,6 +2289,9 @@ const AssessmentList = ({ onSelect, onCreate }) => {
     { key:"deprecated", label:"Cerrados"   },
   ];
   const filtered = filter === "all" ? MOCK_ASSESSMENTS : MOCK_ASSESSMENTS.filter(a => a.status === filter);
+  const paged = filtered.slice((page - 1) * pageSize, page * pageSize);
+
+  const handleFilterChange = (key) => { setFilter(key); setPage(1); };
 
   return (
     <div>
@@ -2213,7 +2319,7 @@ const AssessmentList = ({ onSelect, onCreate }) => {
       {/* Filter tabs */}
       <div style={{ display:"flex", gap:6, marginBottom:16 }}>
         {filters.map(f => (
-          <button key={f.key} onClick={() => setFilter(f.key)} style={{
+          <button key={f.key} onClick={() => handleFilterChange(f.key)} style={{
             padding:"5px 12px", borderRadius:6, border:"none", cursor:"pointer",
             fontSize:12, fontWeight:600, fontFamily:"inherit", transition:"all 0.15s",
             background: filter===f.key ? BDS.secondary[950] : BDS.neutral["000"],
@@ -2234,11 +2340,11 @@ const AssessmentList = ({ onSelect, onCreate }) => {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((a,i) => (
+            {paged.map((a,i) => (
               <tr key={a.id}
                 onClick={() => a.status !== "deprecated" && onSelect(a)}
                 style={{
-                  borderBottom: i < filtered.length-1 ? `1px solid ${T.borderSoft}` : "none",
+                  borderBottom: i < paged.length-1 ? `1px solid ${T.borderSoft}` : "none",
                   cursor: a.status === "deprecated" ? "default" : "pointer",
                   opacity: a.status === "deprecated" ? 0.55 : 1,
                   transition:"background 0.12s",
@@ -2259,6 +2365,8 @@ const AssessmentList = ({ onSelect, onCreate }) => {
             ))}
           </tbody>
         </table>
+        <TablePagination total={filtered.length} page={page} pageSize={pageSize}
+          onPageChange={p => setPage(p)} onPageSizeChange={s => { setPageSize(s); setPage(1); }}/>
       </div>
     </div>
   );
@@ -2507,7 +2615,9 @@ const AssessmentBuilder = ({ onBack }) => {
 // ─── ASSESSMENT OVERVIEW ──────────────────────────────────────────────────────
 const AssessmentOverview = ({ assessment, onBack }) => {
   const [tab, setTab] = useState("overview");
-  const [sidesheet, setSidesheet] = useState(null); // respondent or null
+  const [sidesheet, setSidesheet] = useState(null);
+  const [assPage, setAssPage] = useState(1);
+  const [assPageSize, setAssPageSize] = useState(25);
 
   const respondents = generateAssessmentRespondents(assessment, assessment.responses || 40);
   const skillScores = computeSkillScores(respondents);
@@ -2686,7 +2796,9 @@ const AssessmentOverview = ({ assessment, onBack }) => {
       )}
 
       {/* ── Tab: Respondents ── */}
-      {tab==="respondents" && (
+      {tab==="respondents" && (() => {
+        const pagedResp = respondents.slice((assPage - 1) * assPageSize, assPage * assPageSize);
+        return (
         <div style={{ animation:"fadeUp 0.25s ease" }}>
           <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, overflow:"hidden", boxShadow:"0 1px 3px rgba(12,10,9,0.04)" }}>
             <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
@@ -2698,11 +2810,11 @@ const AssessmentOverview = ({ assessment, onBack }) => {
                 </tr>
               </thead>
               <tbody>
-                {respondents.map((r, i) => (
+                {pagedResp.map((r, i) => (
                   <tr key={r.id}
                     onClick={() => setSidesheet(r)}
                     style={{
-                      borderBottom: i < respondents.length-1 ? `1px solid ${T.borderSoft}` : "none",
+                      borderBottom: i < pagedResp.length-1 ? `1px solid ${T.borderSoft}` : "none",
                       cursor:"pointer", transition:"background 0.12s",
                     }}
                     onMouseEnter={e => { e.currentTarget.style.background = BDS.neutral[50]; }}
@@ -2723,9 +2835,12 @@ const AssessmentOverview = ({ assessment, onBack }) => {
                 ))}
               </tbody>
             </table>
+            <TablePagination total={respondents.length} page={assPage} pageSize={assPageSize}
+              onPageChange={p => setAssPage(p)} onPageSizeChange={s => { setAssPageSize(s); setAssPage(1); }}/>
           </div>
         </div>
-      )}
+        );
+      })()}
 
       {/* ── Sidesheet ── */}
       {sidesheet && (
