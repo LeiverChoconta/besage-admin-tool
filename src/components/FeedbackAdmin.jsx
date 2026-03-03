@@ -504,6 +504,9 @@ const ChartTooltip = ({ active, payload, label, unit="" }) => {
 const PAGE_SIZE_OPTIONS = [25, 50, 100];
 
 const TablePagination = ({ total, page, pageSize, onPageChange, onPageSizeChange }) => {
+  // Hide pagination when total records fit in a single default page
+  if (total <= 25) return null;
+
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const from = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const to = Math.min(page * pageSize, total);
@@ -1725,14 +1728,14 @@ const SurveyList = ({ onSelect, onCreate }) => {
                 onMouseEnter={e => { e.currentTarget.style.background = BDS.neutral[50]; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
               >
-                <td style={{ padding:"13px 16px", fontWeight:600, color:T.textPrimary }}>{s.name}</td>
+                <td style={{ padding:"13px 16px", fontWeight:600, color:T.textPrimary, maxWidth:220, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.name}</td>
                 <td style={{ padding:"13px 16px" }}><TypeTag type={s.type}/></td>
                 <td style={{ padding:"13px 16px" }}><StatusBadge status={s.status}/></td>
                 <td style={{ padding:"13px 16px", fontFamily:"'DM Mono', monospace", fontWeight:700, color:T.textPrimary }}>
                   {s.responses.toLocaleString()}
                 </td>
-                <td style={{ padding:"13px 16px", fontSize:12, color:T.textMuted }}>{s.published || "—"}</td>
-                <td style={{ padding:"13px 16px", fontSize:12, color:BDS.neutral[600] }}>{s.creator}</td>
+                <td style={{ padding:"13px 16px", fontSize:12, color:T.textMuted, whiteSpace:"nowrap" }}>{s.published || "—"}</td>
+                <td style={{ padding:"13px 16px", fontSize:12, color:BDS.neutral[600], maxWidth:120, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.creator}</td>
               </tr>
             ))}
           </tbody>
@@ -2434,14 +2437,17 @@ const AssessmentList = ({ onSelect, onCreate }) => {
                 onMouseEnter={e => { if(a.status!=="deprecated") e.currentTarget.style.background = BDS.neutral[50]; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
               >
-                <td style={{ padding:"13px 16px", fontWeight:600, color:T.textPrimary }}>{a.company}</td>
+                <td style={{ padding:"13px 16px", fontWeight:600, color:T.textPrimary, maxWidth:180, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{a.company}</td>
                 <td style={{ padding:"13px 16px" }}>
-                  <div style={{ display:"flex", gap:4, flexWrap:"wrap" }}>
-                    {a.skills.map(sid => <SkillTag key={sid} skillId={sid}/>)}
+                  <div style={{ display:"flex", gap:4, flexWrap:"nowrap", alignItems:"center" }}>
+                    {a.skills.slice(0, 2).map(sid => <SkillTag key={sid} skillId={sid}/>)}
+                    {a.skills.length > 2 && (
+                      <span style={{ fontSize:10, fontWeight:700, padding:"2px 6px", borderRadius:4, background:BDS.neutral[100], color:T.textMuted, fontFamily:"'DM Mono', monospace", flexShrink:0 }}>+{a.skills.length - 2}</span>
+                    )}
                   </div>
                 </td>
                 <td style={{ padding:"13px 16px", fontFamily:"'DM Mono', monospace", fontWeight:700, color:T.textPrimary }}>{a.responses.toLocaleString()}</td>
-                <td style={{ padding:"13px 16px", fontSize:12, color:T.textMuted }}>{a.created}</td>
+                <td style={{ padding:"13px 16px", fontSize:12, color:T.textMuted, whiteSpace:"nowrap" }}>{a.created}</td>
                 <td style={{ padding:"13px 16px" }}><AssStatusBadge status={a.status}/></td>
               </tr>
             ))}
@@ -2892,14 +2898,17 @@ const AssessmentOverview = ({ assessment, onBack }) => {
                     onMouseEnter={e => { e.currentTarget.style.background = BDS.neutral[50]; }}
                     onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
                   >
-                    <td style={{ padding:"11px 14px", fontSize:11, color:T.textMuted, fontFamily:"'DM Mono', monospace" }}>{r.id}</td>
-                    <td style={{ padding:"11px 14px", fontWeight:600, color:T.textPrimary }}>{r.name}</td>
-                    <td style={{ padding:"11px 14px", fontSize:12, color:T.textMuted }}>{r.gender}</td>
-                    <td style={{ padding:"11px 14px", fontSize:12, color:T.textMuted }}>{r.ageRange}</td>
-                    <td style={{ padding:"11px 14px", fontSize:12, color:T.textMuted }}>{r.job}</td>
+                    <td style={{ padding:"11px 14px", fontSize:11, color:T.textMuted, fontFamily:"'DM Mono', monospace", whiteSpace:"nowrap" }}>{r.id}</td>
+                    <td style={{ padding:"11px 14px", fontWeight:600, color:T.textPrimary, maxWidth:140, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{r.name}</td>
+                    <td style={{ padding:"11px 14px", fontSize:12, color:T.textMuted, whiteSpace:"nowrap" }}>{r.gender}</td>
+                    <td style={{ padding:"11px 14px", fontSize:12, color:T.textMuted, whiteSpace:"nowrap" }}>{r.ageRange}</td>
+                    <td style={{ padding:"11px 14px", fontSize:12, color:T.textMuted, maxWidth:160, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{r.job}</td>
                     <td style={{ padding:"11px 14px" }}>
-                      <div style={{ display:"flex", gap:4, flexWrap:"wrap" }}>
-                        {r.selectedSkills.map(sid => <SkillTag key={sid} skillId={sid}/>)}
+                      <div style={{ display:"flex", gap:4, flexWrap:"nowrap", alignItems:"center" }}>
+                        {r.selectedSkills.slice(0, 2).map(sid => <SkillTag key={sid} skillId={sid}/>)}
+                        {r.selectedSkills.length > 2 && (
+                          <span style={{ fontSize:10, fontWeight:700, padding:"2px 6px", borderRadius:4, background:BDS.neutral[100], color:T.textMuted, fontFamily:"'DM Mono', monospace", flexShrink:0 }}>+{r.selectedSkills.length - 2}</span>
+                        )}
                       </div>
                     </td>
                     <td style={{ padding:"11px 14px", fontSize:12, color:T.textMuted }}>{r.date}</td>
