@@ -134,12 +134,12 @@ const SURVEY_TYPES = {
 const SURVEYS = [
   { id:1, name:"Q1 2025 NPS Global",           type:"NPS",       status:"published",  responses:1284, published:"2025-01-10", creator:"Ana Torres",   questions:3 },
   { id:2, name:"Onboarding CES Flow",           type:"CES",       status:"published",  responses:432,  published:"2025-02-01", creator:"Carlos Mejía", questions:5 },
-  { id:3, name:"Feature PMF — Mobile",          type:"PMF",       status:"draft",      responses:0,    published:null,         creator:"Leiver Díaz",  questions:7 },
   { id:4, name:"Post-Churn Exit Survey",        type:"CCR",       status:"published",  responses:89,   published:"2025-01-28", creator:"Ana Torres",   questions:6 },
   { id:5, name:"Checkout CSAT",                 type:"CSAT",      status:"deprecated", responses:2103, published:"2024-10-15", creator:"Sofía Reyes",  questions:2 },
   { id:6, name:"Open Feedback — Dashboard",     type:"Open",      status:"published",  responses:317,  published:"2025-02-14", creator:"Carlos Mejía", questions:1 },
-  { id:7, name:"User Interviews — Power Users", type:"Interview", status:"draft",      responses:0,    published:null,         creator:"Leiver Díaz",  questions:12 },
   { id:8, name:"Q4 2024 NPS",                   type:"NPS",       status:"deprecated", responses:3401, published:"2024-10-01", creator:"Sofía Reyes",  questions:3 },
+  { id:9, name:"PMF — Mobile App",              type:"PMF",       status:"published",  responses:156,  published:"2025-02-20", creator:"Leiver Díaz",  questions:7 },
+  { id:10,name:"User Interviews — Power Users", type:"Interview", status:"published",  responses:24,   published:"2025-02-25", creator:"Leiver Díaz",  questions:12 },
 ];
 
 // ─── STATUS CONFIG ────────────────────────────────────────────────────────────
@@ -736,23 +736,24 @@ const NPSScoreBar = ({ segments, score }) => {
 
 // ─── TYPE-SPECIFIC CHARTS ─────────────────────────────────────────────────────
 const NPSCharts = ({ d }) => (
-  <div className="grid grid-cols-2 gap-4">
-    <div style={{ gridColumn:"span 2" }}>
+  <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+    {/* Row 1: NPS Score + Distribution side by side */}
+    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
       <NPSScoreBar segments={d.segments} score={d.score.value}/>
+      <ChartCard title="Distribución de puntajes (0–10)">
+        <ResponsiveContainer width="100%" height={180}>
+          <BarChart data={d.distribution} margin={{ top:4,right:4,bottom:0,left:-20 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false}/>
+            <XAxis dataKey="score" tick={{ fill:"#94a3b8",fontSize:11 }} axisLine={false} tickLine={false}/>
+            <YAxis tick={{ fill:"#94a3b8",fontSize:11 }} axisLine={false} tickLine={false} unit="%"/>
+            <Tooltip content={<ChartTooltip unit="%"/>}/>
+            <Bar dataKey="pct" name="Respuestas" radius={[4,4,0,0]}>
+              {d.distribution.map((e,i) => <Cell key={i} fill={e.fill}/>)}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </ChartCard>
     </div>
-    <ChartCard title="Distribución de puntajes (0–10)" cols={2}>
-      <ResponsiveContainer width="100%" height={150}>
-        <BarChart data={d.distribution} margin={{ top:4,right:4,bottom:0,left:-20 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false}/>
-          <XAxis dataKey="score" tick={{ fill:"#94a3b8",fontSize:11 }} axisLine={false} tickLine={false}/>
-          <YAxis tick={{ fill:"#94a3b8",fontSize:11 }} axisLine={false} tickLine={false} unit="%"/>
-          <Tooltip content={<ChartTooltip unit="%"/>}/>
-          <Bar dataKey="pct" name="Respuestas" radius={[4,4,0,0]}>
-            {d.distribution.map((e,i) => <Cell key={i} fill={e.fill}/>)}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-    </ChartCard>
   </div>
 );
 
@@ -1602,6 +1603,67 @@ const Breadcrumbs = ({ crumbs }) => (
 );
 
 // ─── VIEW 1: SURVEY LIST ──────────────────────────────────────────────────────
+const FilterButton = ({ filters, current, onChange, columns }) => {
+  const [open, setOpen] = useState(false);
+  const [colFilter, setColFilter] = useState("all"); // which column to filter
+  const ref = useRef(null);
+
+  // Close on outside click
+  React.useEffect(() => {
+    if (!open) return;
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  return (
+    <div ref={ref} style={{ position:"relative" }}>
+      <button onClick={() => setOpen(!open)} style={{
+        display:"flex", alignItems:"center", gap:6,
+        padding:"9px 14px", borderRadius:8,
+        border:`1px solid ${T.borderBase}`,
+        fontSize:13, fontWeight:600, color:T.textPrimary, cursor:"pointer",
+        background:BDS.neutral["000"], fontFamily:"inherit", transition:"all 0.15s",
+        boxShadow:"0 1px 3px rgba(12,10,9,0.06)",
+      }}>
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+          <path d="M2 4h12M4 8h8M6 12h4" stroke={T.textMuted} strokeWidth="1.5" strokeLinecap="round"/>
+        </svg>
+        Filtrar
+        {current !== "all" && (
+          <span style={{ width:6, height:6, borderRadius:"50%", background:BDS.primary[500], flexShrink:0 }}/>
+        )}
+      </button>
+      {open && (
+        <div style={{
+          position:"absolute", top:"calc(100% + 6px)", left:0, zIndex:50,
+          background:BDS.neutral["000"], border:`1px solid ${T.borderSoft}`,
+          borderRadius:10, padding:8, boxShadow:"0 8px 24px rgba(12,10,9,0.12)",
+          minWidth:180,
+        }}>
+          <p style={{ fontSize:10, fontWeight:700, color:T.textMuted, textTransform:"uppercase", letterSpacing:"0.08em", padding:"4px 8px", margin:0 }}>Estado</p>
+          {filters.map(f => (
+            <button key={f.key} onClick={() => { onChange(f.key); setOpen(false); }} style={{
+              width:"100%", display:"flex", alignItems:"center", gap:8,
+              padding:"7px 10px", borderRadius:6, border:"none", cursor:"pointer",
+              background: current===f.key ? BDS.primary[50] : "transparent",
+              color: current===f.key ? BDS.primary[700] : T.textPrimary,
+              fontFamily:"inherit", fontSize:12, fontWeight: current===f.key ? 600 : 500,
+              transition:"all 0.12s", textAlign:"left",
+            }}
+              onMouseEnter={e => { if(current!==f.key) e.currentTarget.style.background = BDS.neutral[50]; }}
+              onMouseLeave={e => { if(current!==f.key) e.currentTarget.style.background = "transparent"; }}
+            >
+              {current===f.key && <span style={{ width:4, height:4, borderRadius:"50%", background:BDS.primary[500] }}/>}
+              {f.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const SurveyList = ({ onSelect, onCreate }) => {
   const [filter,setFilter] = useState("all");
   const [page, setPage] = useState(1);
@@ -1611,7 +1673,7 @@ const SurveyList = ({ onSelect, onCreate }) => {
 
   const filters = [
     {key:"all",label:"Todas"},{key:"published",label:"Publicadas"},
-    {key:"draft",label:"Borradores"},{key:"deprecated",label:"Cerradas"},
+    {key:"deprecated",label:"Cerradas"},
   ];
 
   const handleFilterChange = (key) => { setFilter(key); setPage(1); };
@@ -1627,28 +1689,19 @@ const SurveyList = ({ onSelect, onCreate }) => {
             {SURVEYS.length} encuestas · {SURVEYS.filter(s=>s.status==="published").length} activas
           </p>
         </div>
-        <button onClick={onCreate} style={{
-          display:"flex", alignItems:"center", gap:8,
-          padding:"9px 18px", borderRadius:8, border:"none",
-          fontSize:13, fontWeight:700, color:"#fff", cursor:"pointer",
-          background:BDS.primary[500],
-          boxShadow:"0 2px 8px rgba(226,101,0,0.25)",
-          fontFamily:"inherit", transition:"all 0.15s",
-        }}>
-          + Nueva encuesta
-        </button>
-      </div>
-
-      <div style={{ display:"flex", gap:6, marginBottom:16 }}>
-        {filters.map(f => (
-          <button key={f.key} onClick={()=>handleFilterChange(f.key)} style={{
-            padding:"5px 12px", borderRadius:6, border:"none", cursor:"pointer",
-            fontSize:12, fontWeight:600, fontFamily:"inherit", transition:"all 0.15s",
-            background: filter===f.key ? BDS.secondary[950] : BDS.neutral["000"],
-            color:       filter===f.key ? "#fff" : BDS.neutral[500],
-            boxShadow:   filter===f.key ? "none" : `0 0 0 1px ${T.borderSoft}`,
-          }}>{f.label}</button>
-        ))}
+        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+          <FilterButton filters={filters} current={filter} onChange={handleFilterChange}/>
+          <button onClick={onCreate} style={{
+            display:"flex", alignItems:"center", gap:8,
+            padding:"9px 18px", borderRadius:8, border:"none",
+            fontSize:13, fontWeight:700, color:"#fff", cursor:"pointer",
+            background:BDS.primary[500],
+            boxShadow:"0 2px 8px rgba(226,101,0,0.25)",
+            fontFamily:"inherit", transition:"all 0.15s",
+          }}>
+            + Nueva encuesta
+          </button>
+        </div>
       </div>
 
       <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, overflow:"hidden", boxShadow:"0 1px 3px rgba(12,10,9,0.06)", flex:1, minHeight:0, display:"flex", flexDirection:"column", overflowY:"auto" }}>
@@ -1663,20 +1716,16 @@ const SurveyList = ({ onSelect, onCreate }) => {
           <tbody>
             {paged.map((s, i) => (
               <tr key={s.id}
-                onClick={() => s.status !== "draft" && onSelect(s)}
+                onClick={() => onSelect(s)}
                 style={{
                   borderBottom: i < paged.length-1 ? `1px solid ${T.borderSoft}` : "none",
-                  cursor: s.status==="draft" ? "default" : "pointer",
-                  opacity: s.status==="draft" ? 0.55 : 1,
+                  cursor:"pointer",
                   transition:"background 0.12s",
                 }}
-                onMouseEnter={e => { if(s.status!=="draft") e.currentTarget.style.background = BDS.neutral[50]; }}
+                onMouseEnter={e => { e.currentTarget.style.background = BDS.neutral[50]; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
               >
-                <td style={{ padding:"13px 16px", fontWeight:600, color:T.textPrimary }}>
-                  {s.name}
-                  {s.status==="draft" && <span style={{ marginLeft:8, fontSize:12, color:T.textMuted }}>— No disponible</span>}
-                </td>
+                <td style={{ padding:"13px 16px", fontWeight:600, color:T.textPrimary }}>{s.name}</td>
                 <td style={{ padding:"13px 16px" }}><TypeTag type={s.type}/></td>
                 <td style={{ padding:"13px 16px" }}><StatusBadge status={s.status}/></td>
                 <td style={{ padding:"13px 16px", fontFamily:"'DM Mono', monospace", fontWeight:700, color:T.textPrimary }}>
@@ -2347,29 +2396,19 @@ const AssessmentList = ({ onSelect, onCreate }) => {
             {MOCK_ASSESSMENTS.length} formularios · {MOCK_ASSESSMENTS.filter(a=>a.status==="published").length} publicados
           </p>
         </div>
-        <button onClick={onCreate} style={{
-          display:"flex", alignItems:"center", gap:8,
-          padding:"9px 18px", borderRadius:8, border:"none",
-          fontSize:13, fontWeight:700, color:"#fff", cursor:"pointer",
-          background:BDS.primary[500],
-          boxShadow:"0 2px 8px rgba(226,101,0,0.25)",
-          fontFamily:"inherit", transition:"all 0.15s",
-        }}>
-          + Agregar formulario
-        </button>
-      </div>
-
-      {/* Filter tabs */}
-      <div style={{ display:"flex", gap:6, marginBottom:16 }}>
-        {filters.map(f => (
-          <button key={f.key} onClick={() => handleFilterChange(f.key)} style={{
-            padding:"5px 12px", borderRadius:6, border:"none", cursor:"pointer",
-            fontSize:12, fontWeight:600, fontFamily:"inherit", transition:"all 0.15s",
-            background: filter===f.key ? BDS.secondary[950] : BDS.neutral["000"],
-            color:       filter===f.key ? "#fff" : BDS.neutral[500],
-            boxShadow:   filter===f.key ? "none" : `0 0 0 1px ${T.borderSoft}`,
-          }}>{f.label}</button>
-        ))}
+        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+          <FilterButton filters={filters} current={filter} onChange={handleFilterChange}/>
+          <button onClick={onCreate} style={{
+            display:"flex", alignItems:"center", gap:8,
+            padding:"9px 18px", borderRadius:8, border:"none",
+            fontSize:13, fontWeight:700, color:"#fff", cursor:"pointer",
+            background:BDS.primary[500],
+            boxShadow:"0 2px 8px rgba(226,101,0,0.25)",
+            fontFamily:"inherit", transition:"all 0.15s",
+          }}>
+            + Agregar formulario
+          </button>
+        </div>
       </div>
 
       {/* Table */}
@@ -2689,6 +2728,7 @@ const AssessmentOverview = ({ assessment, onBack }) => {
   const TABS = [
     { key:"overview",     label:"Overview"   },
     { key:"respondents",  label:"Respuestas" },
+    ...(assessment.status === "published" ? [{ key:"questions", label:"Preguntas" }] : []),
   ];
 
   return (
@@ -2874,7 +2914,117 @@ const AssessmentOverview = ({ assessment, onBack }) => {
         );
       })()}
 
-      {/* ── Sidesheet ── */}
+      {/* ── Tab: Questions (published only) ── */}
+      {tab==="questions" && assessment.status === "published" && (() => {
+        // Get questions relevant to this assessment's skills
+        const assQuestions = ASSESSMENT_QUESTIONS.filter(q => assessment.skills.includes(q.skill));
+
+        // Generate mock branching data based on question skill type
+        const branchData = {};
+        assQuestions.forEach((q, idx) => {
+          // Some questions (scale-like) have branching: if score ≤ 2, go to a follow-up path
+          if (idx % 3 === 0 && idx + 2 < assQuestions.length) {
+            branchData[q.id] = {
+              condition: "Si responde 1 o 2 (negativo)",
+              pathA: { label:"Ruta A — Respuesta positiva (3–5)", targetIdx: idx + 1, color: BDS.emerald[600], bg: BDS.emerald[100] },
+              pathB: { label:"Ruta B — Respuesta negativa (1–2)", targetIdx: idx + 2, color: BDS.red[600], bg: BDS.red[100] },
+            };
+          }
+        });
+
+        return (
+          <div style={{ animation:"fadeUp 0.25s ease" }}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
+              <p style={{ fontSize:14, fontWeight:600, color:T.textPrimary, margin:0 }}>
+                {assQuestions.length} preguntas
+                <span style={{ marginLeft:8, fontSize:12, fontWeight:400, color:T.textMuted }}>· {Object.keys(branchData).length} con ramificación</span>
+              </p>
+              <div style={{
+                display:"flex", alignItems:"center", gap:6, padding:"6px 12px", borderRadius:8, fontSize:12, fontWeight:600,
+                background:BDS.neutral[50], border:`1px solid ${T.borderSoft}`, color:T.textMuted,
+              }}>
+                🔒 Solo lectura
+              </div>
+            </div>
+
+            <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+              {assQuestions.map((q, idx) => {
+                const s = SKILL_MAP[q.skill];
+                const branch = branchData[q.id];
+                return (
+                  <div key={q.id}>
+                    <div style={{
+                      background:BDS.neutral["000"], borderRadius:12,
+                      border:`1px solid ${T.borderSoft}`,
+                      boxShadow:"0 1px 2px rgba(12,10,9,0.04)",
+                      display:"flex", transition:"all 0.15s",
+                    }}>
+                      {/* Order */}
+                      <div style={{
+                        display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"0 16px",
+                        borderRight:`1px solid ${T.borderSoft}`, borderRadius:"12px 0 0 12px", flexShrink:0,
+                        background:"rgba(250,250,249,0.6)",
+                      }}>
+                        <span style={{ fontSize:12, fontWeight:900, color:T.textMuted, fontFamily:"'DM Mono', monospace" }}>{String(idx + 1).padStart(2,"0")}</span>
+                      </div>
+                      {/* Content */}
+                      <div style={{ flex:1, padding:16, minWidth:0 }}>
+                        <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:12 }}>
+                          <p style={{ fontSize:14, fontWeight:600, color:T.textPrimary, lineHeight:1.4, flex:1, margin:0 }}>{q.text}</p>
+                          <div style={{ display:"flex", alignItems:"center", gap:6, flexShrink:0 }}>
+                            {s && <span style={{ fontSize:10, fontWeight:700, padding:"2px 7px", borderRadius:4, background:s.bg, color:s.color, border:`1px solid ${s.color}30`, fontFamily:"'DM Mono', monospace" }}>{s.id} — {s.label}</span>}
+                            <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:12, padding:"4px 8px", borderRadius:8, fontWeight:600, background:"#eff6ff", color:"#E26500" }}>⚖️ Likert 1–5</span>
+                          </div>
+                        </div>
+
+                        {/* Branching visualization */}
+                        {branch && (
+                          <div style={{ marginTop:12, paddingTop:12, borderTop:`1px dashed ${BDS.neutral[200]}` }}>
+                            <p style={{ fontSize:11, fontWeight:700, color:BDS.primary[600], margin:"0 0 8px" }}>
+                              ↪ Ramificación: {branch.condition}
+                            </p>
+                            <div style={{ display:"flex", gap:10 }}>
+                              {/* Path A */}
+                              <div style={{
+                                flex:1, borderRadius:8, padding:"10px 12px",
+                                background:branch.pathA.bg, border:`1px solid ${branch.pathA.color}30`,
+                                position:"relative",
+                              }}>
+                                <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:6 }}>
+                                  <span style={{ width:8, height:8, borderRadius:"50%", background:branch.pathA.color, flexShrink:0 }}/>
+                                  <span style={{ fontSize:11, fontWeight:700, color:branch.pathA.color }}>{branch.pathA.label}</span>
+                                </div>
+                                <p style={{ fontSize:11, color:T.textMuted, margin:0 }}>
+                                  → Continúa a P{branch.pathA.targetIdx + 1}: <span style={{ fontStyle:"italic" }}>{assQuestions[branch.pathA.targetIdx]?.text.slice(0,50)}…</span>
+                                </p>
+                              </div>
+                              {/* Path B */}
+                              <div style={{
+                                flex:1, borderRadius:8, padding:"10px 12px",
+                                background:branch.pathB.bg, border:`1px solid ${branch.pathB.color}30`,
+                                position:"relative",
+                              }}>
+                                <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:6 }}>
+                                  <span style={{ width:8, height:8, borderRadius:"50%", background:branch.pathB.color, flexShrink:0 }}/>
+                                  <span style={{ fontSize:11, fontWeight:700, color:branch.pathB.color }}>{branch.pathB.label}</span>
+                                </div>
+                                <p style={{ fontSize:11, color:T.textMuted, margin:0 }}>
+                                  → Salta a P{branch.pathB.targetIdx + 1}: <span style={{ fontStyle:"italic" }}>{assQuestions[branch.pathB.targetIdx]?.text.slice(0,50)}…</span>
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
+
       {sidesheet && (
         <>
           {/* Backdrop */}
@@ -3139,7 +3289,6 @@ export default function FeedbackAdmin() {
   const TAB_LABELS = { overview:"Overview", demographics:"Demografía", respondents:"Respuestas", questions:"Preguntas" };
 
   const handleSelect = (survey) => {
-    if (survey.status==="draft") return;
     setSelected(survey); setTab("overview"); setView("overview");
   };
 
