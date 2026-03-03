@@ -844,7 +844,8 @@ const TypeCharts = ({ survey, d }) => {
 // ─── I18N / MULTILANG HELPER ─────────────────────────────────────────────────
 // Truncates text for chart axes, preserving full text in tooltips
 const truncLabel = (str, max=14) => str && str.length > max ? str.slice(0, max-1) + '…' : (str || '');
-const isRTL = (str) => /[؀-ۿݐ-ݿ֐-׿ࢠ-ࣿ]/.test(str);
+const RTL_REGEX = new RegExp('[\u0600-\u06FF\u0750-\u077F\u0590-\u05FF\u08A0-\u08FF]');
+const isRTL = (str) => RTL_REGEX.test(str);
 
 // ─── DEMOGRAPHICS TAB ────────────────────────────────────────────────────────
 const HorizBarList = ({ data, labelKey, valueKey="value", colorKey="fill" }) => (
@@ -2478,7 +2479,6 @@ const AssessmentBuilder = ({ onBack }) => {
           </div>
         </div>
       )}
-      </div>
     </div>
   );
 };
