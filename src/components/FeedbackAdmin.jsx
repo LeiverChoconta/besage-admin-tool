@@ -530,6 +530,7 @@ const TablePagination = ({ total, page, pageSize, onPageChange, onPageSizeChange
       display:"flex", alignItems:"center", justifyContent:"space-between",
       padding:"12px 16px", borderTop:`1px solid ${T.borderSoft}`,
       background:BDS.neutral[50],
+      position:"sticky", bottom:0, zIndex:10,
     }}>
       {/* Left: page size selector */}
       <div style={{ display:"flex", alignItems:"center", gap:8 }}>
@@ -1209,7 +1210,7 @@ const RespondentTable = ({ survey }) => {
 
   return (
     <div style={{ position:"relative" }}>
-      <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, overflow:"hidden", boxShadow:"0 1px 3px rgba(12,10,9,0.04)" }}>
+      <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, overflow:"hidden", boxShadow:"0 1px 3px rgba(12,10,9,0.04)", maxHeight:"calc(100vh - 260px)", overflowY:"auto" }}>
         <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
           <thead>
             <tr style={{ borderBottom:`1px solid ${T.borderSoft}`, background:BDS.neutral[50] }}>
@@ -1606,7 +1607,7 @@ const SurveyList = ({ onSelect, onCreate }) => {
         ))}
       </div>
 
-      <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, overflow:"hidden", boxShadow:"0 1px 3px rgba(12,10,9,0.06)" }}>
+      <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, overflow:"hidden", boxShadow:"0 1px 3px rgba(12,10,9,0.06)", maxHeight:"calc(100vh - 300px)", overflowY:"auto" }}>
         <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
           <thead>
             <tr style={{ borderBottom:`1px solid ${T.borderSoft}`, background:BDS.neutral[50] }}>
@@ -2330,7 +2331,7 @@ const AssessmentList = ({ onSelect, onCreate }) => {
       </div>
 
       {/* Table */}
-      <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, overflow:"hidden", boxShadow:"0 1px 3px rgba(12,10,9,0.06)" }}>
+      <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, overflow:"hidden", boxShadow:"0 1px 3px rgba(12,10,9,0.06)", maxHeight:"calc(100vh - 300px)", overflowY:"auto" }}>
         <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
           <thead>
             <tr style={{ borderBottom:`1px solid ${T.borderSoft}`, background:BDS.neutral[50] }}>
@@ -2800,7 +2801,7 @@ const AssessmentOverview = ({ assessment, onBack }) => {
         const pagedResp = respondents.slice((assPage - 1) * assPageSize, assPage * assPageSize);
         return (
         <div style={{ animation:"fadeUp 0.25s ease" }}>
-          <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, overflow:"hidden", boxShadow:"0 1px 3px rgba(12,10,9,0.04)" }}>
+          <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, overflow:"hidden", boxShadow:"0 1px 3px rgba(12,10,9,0.04)", maxHeight:"calc(100vh - 340px)", overflowY:"auto" }}>
             <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
               <thead>
                 <tr style={{ borderBottom:`1px solid ${T.borderSoft}`, background:BDS.neutral[50] }}>
