@@ -1580,20 +1580,20 @@ const QuestionsTab = ({ survey }) => {
 
 // ─── BREADCRUMBS ─────────────────────────────────────────────────────────────
 const Breadcrumbs = ({ crumbs }) => (
-  <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" }}>
+  <div style={{ display:"flex", alignItems:"center", gap:4, marginBottom:12 }}>
     {crumbs.map((crumb,i) => {
       const isLast = i===crumbs.length-1;
       return (
-        <div key={i} style={{ display:"flex", alignItems:"center", gap:6 }}>
+        <div key={i} style={{ display:"flex", alignItems:"center", gap:4 }}>
           {i>0 && (
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path d="M4 2.5L7.5 6L4 9.5" stroke="#D6D3D1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+              <path d="M4 2.5L7.5 6L4 9.5" stroke={BDS.neutral[400]} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           )}
           {isLast
-            ? <span style={{ fontSize:12, fontWeight:600, color:"#44403B", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:200 }}>{crumb.label}</span>
-            : <button onClick={crumb.onClick} style={{ fontSize:12, fontWeight:500, color:"#A6A09B", background:"none", border:"none", cursor:"pointer", fontFamily:"inherit", padding:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:160, transition:"color 0.15s" }}
-                onMouseEnter={e=>{e.target.style.color="#C55300"}} onMouseLeave={e=>{e.target.style.color="#A6A09B"}}>{crumb.label}</button>
+            ? <span style={{ fontSize:11, fontWeight:600, color:T.textMuted }}>{crumb.label}</span>
+            : <button onClick={crumb.onClick} style={{ fontSize:11, fontWeight:500, color:BDS.neutral[400], background:"none", border:"none", cursor:"pointer", fontFamily:"inherit", padding:0, transition:"color 0.15s" }}
+                onMouseEnter={e=>{e.target.style.color=BDS.primary[500]}} onMouseLeave={e=>{e.target.style.color=BDS.neutral[400]}}>{crumb.label}</button>
           }
         </div>
       );
@@ -3142,25 +3142,9 @@ export default function FeedbackAdmin() {
         {/* Right panel */}
         <div style={{ flex:1, display:"flex", flexDirection:"column", minWidth:0, height:"100vh", overflow:"hidden" }}>
 
-          {/* Top bar */}
-          <header style={{
-            height:56, background:BDS.neutral["000"],
-            borderBottom:`1px solid ${T.borderSoft}`,
-            display:"flex", alignItems:"center", padding:"0 32px", gap:16,
-            position:"sticky", top:0, zIndex:40,
-            boxShadow:"0 1px 2px rgba(12,10,9,0.06)",
-          }}>
-
-            {/* Breadcrumbs */}
-            <Breadcrumbs crumbs={buildCrumbs()}/>
-
-            {/* Spacer */}
-            <div className="flex-1"/>
-
-          </header>
-
           {/* Page content */}
           <main style={{ flex:1, padding:"32px", overflowY:"auto", overflowX:"hidden", display:"flex", flexDirection:"column" }}>
+            <Breadcrumbs crumbs={buildCrumbs()}/>
             {page==="surveys" && (
               <>
                 {view==="list"    && <SurveyList onSelect={handleSelect} onCreate={goToBuilder}/>}
