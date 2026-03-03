@@ -3157,23 +3157,6 @@ export default function FeedbackAdmin() {
             {/* Spacer */}
             <div className="flex-1"/>
 
-            {/* Surveys sub-nav (only on surveys page) */}
-            {page==="surveys" && (
-              <div style={{ display:"flex", alignItems:"center", gap:4 }}>
-                {[
-                  {key:"list",    label:"Lista",          action:goToList,    active:view==="list"||view==="overview"},
-                  {key:"builder", label:"Constructor IA", action:goToBuilder, active:view==="builder"},
-                ].map(n => (
-                  <button key={n.key} onClick={n.action} style={{
-                    padding:"5px 12px", borderRadius:6, border:"none",
-                    fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit",
-                    background: n.active ? BDS.secondary[950] : "transparent",
-                    color: n.active ? BDS.neutral["000"] : BDS.neutral[500],
-                    transition:"all 0.15s",
-                  }}>{n.label}</button>
-                ))}
-              </div>
-            )}
           </header>
 
           {/* Page content */}
