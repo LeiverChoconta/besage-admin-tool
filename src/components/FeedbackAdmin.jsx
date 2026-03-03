@@ -2980,12 +2980,17 @@ const AssessmentPage = () => {
 };
 
 // ════════════════════════════════════════════════════════════════════════════════
-const NAV_SECTIONS = [
+const PRODUCTS = [
+  { id:"ileader", label:"iLeader" },
+  { id:"allsenses", label:"All Your Senses" },
+];
+
+const getNavSections = (product) => [
   {
     label: "Product",
     items: [
       { id:"surveys",     label:"Surveys",        icon:NoteIcon,     page:"surveys"     },
-      { id:"assessments", label:"Assessments",     icon:BrainIcon,    page:"assessments" },
+      ...(product==="ileader" ? [{ id:"assessments", label:"Skill Forms", icon:BrainIcon, page:"assessments" }] : []),
       { id:"flags",       label:"Feature Flags",   icon:Flag01Icon,   page:"flags"       },
     ],
   },
@@ -2998,7 +3003,9 @@ const NAV_SECTIONS = [
   },
 ];
 
-const Sidebar = ({ page, setPage, view, goToSurveys, goToBuilder }) => {
+const Sidebar = ({ page, setPage, view, goToSurveys, goToBuilder, product, setProduct }) => {
+  const [productOpen, setProductOpen] = React.useState(false);
+  const NAV_SECTIONS = getNavSections(product);
   return (
     <aside style={{
       width:224, flexShrink:0, background:BDS.secondary[950],
@@ -3017,12 +3024,61 @@ const Sidebar = ({ page, setPage, view, goToSurveys, goToBuilder }) => {
         }}><HugeiconsIcon icon={BarCode01Icon} size={16} color="#fff" strokeWidth={2}/></div>
         <div style={{ minWidth:0 }}>
           <p style={{ fontWeight:700, color:BDS.neutral["000"], fontSize:13, margin:0, lineHeight:1.3, letterSpacing:"-0.01em" }}>Feedback Admin</p>
-          <p style={{ fontSize:10, color:"rgba(255,255,255,0.4)", margin:0, lineHeight:1.3 }}>iLeader · Internal</p>
+          <p style={{ fontSize:10, color:"rgba(255,255,255,0.4)", margin:0, lineHeight:1.3 }}>{PRODUCTS.find(p=>p.id===product)?.label} · Internal</p>
+        </div>
+      </div>
+
+      {/* Product Selector */}
+      <div style={{ padding:"12px 10px 0" }}>
+        <div style={{ position:"relative" }}>
+          <button
+            onClick={() => setProductOpen(!productOpen)}
+            style={{
+              width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between",
+              padding:"7px 10px", borderRadius:8,
+              background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.08)",
+              cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s",
+              color:BDS.neutral["000"],
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+          >
+            <span style={{ fontSize:12, fontWeight:600 }}>{PRODUCTS.find(p=>p.id===product)?.label}</span>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ transform: productOpen ? "rotate(180deg)" : "rotate(0deg)", transition:"transform 0.15s" }}>
+              <path d="M3 4.5L6 7.5L9 4.5" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          {productOpen && (
+            <div style={{
+              position:"absolute", top:"calc(100% + 4px)", left:0, right:0, zIndex:50,
+              background:BDS.secondary[900], border:"1px solid rgba(255,255,255,0.1)",
+              borderRadius:8, padding:4, boxShadow:"0 8px 24px rgba(0,0,0,0.4)",
+            }}>
+              {PRODUCTS.map(p => (
+                <button key={p.id}
+                  onClick={() => { setProduct(p.id); setProductOpen(false); if(p.id!=="ileader" && page==="assessments") setPage("surveys"); }}
+                  style={{
+                    width:"100%", display:"flex", alignItems:"center", gap:8,
+                    padding:"6px 10px", borderRadius:6, border:"none", cursor:"pointer",
+                    background: product===p.id ? `rgba(${parseInt(BDS.primary[500].slice(1,3),16)},${parseInt(BDS.primary[500].slice(3,5),16)},${parseInt(BDS.primary[500].slice(5,7),16)},0.15)` : "transparent",
+                    color: product===p.id ? BDS.primary[300] : "rgba(255,255,255,0.7)",
+                    fontFamily:"inherit", fontSize:12, fontWeight: product===p.id ? 600 : 500,
+                    transition:"all 0.12s",
+                  }}
+                  onMouseEnter={e => { if(product!==p.id) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+                  onMouseLeave={e => { if(product!==p.id) e.currentTarget.style.background = "transparent"; }}
+                >
+                  {product===p.id && <span style={{ width:4, height:4, borderRadius:"50%", background:BDS.primary[400] }}/>}
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Nav */}
-      <nav style={{ flex:1, padding:"16px 10px", overflowY:"auto" }}>
+      <nav style={{ flex:1, padding:"12px 10px", overflowY:"auto" }}>
         {NAV_SECTIONS.map(section => (
           <div key={section.label} style={{ marginBottom:20 }}>
             <p style={{
@@ -3086,6 +3142,7 @@ const Sidebar = ({ page, setPage, view, goToSurveys, goToBuilder }) => {
 // ─── ROOT ─────────────────────────────────────────────────────────────────────
 export default function FeedbackAdmin() {
   const [page,     setPage]     = useState("surveys"); // surveys | assessments | flags
+  const [product,  setProduct]  = useState("ileader"); // ileader | allsenses
   const [view,     setView]     = useState("list");    // list | builder | overview
   const [selected, setSelected] = useState(null);
   const [tab,      setTab]      = useState("overview");
@@ -3137,6 +3194,7 @@ export default function FeedbackAdmin() {
           view={view}
           goToSurveys={goToSurveys}
           goToBuilder={goToBuilder}
+          product={product} setProduct={setProduct}
         />
 
         {/* Right panel */}
