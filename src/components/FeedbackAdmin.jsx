@@ -443,8 +443,7 @@ Si el tipo es scale o nps, NO incluyas el campo options. Si el tipo es choice, i
 const TypeTag = ({ type }) => {
   const t = SURVEY_TYPES[type] || { abbr:type, color:"#79716B", bg:"#FAFAF9" };
   return (
-    <span className="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded"
-      style={{ background:t.bg, color:t.color, fontFamily:"'DM Mono', monospace", letterSpacing:"0.06em" }}>
+    <span style={{ display:"inline-flex", alignItems:"center", fontSize:10, fontWeight:700, padding:"2px 8px", borderRadius:4, background:t.bg, color:t.color, fontFamily:"'DM Mono', monospace", letterSpacing:"0.06em" }}>
       {t.abbr}
     </span>
   );
@@ -453,9 +452,8 @@ const TypeTag = ({ type }) => {
 const StatusBadge = ({ status }) => {
   const s = STATUS_CFG[status] || STATUS_CFG.draft;
   return (
-    <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full"
-      style={{ background:s.bg, color:s.color, border:`1px solid ${s.border}` }}>
-      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background:s.color }}/>
+    <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:12, fontWeight:600, padding:"4px 10px", borderRadius:99, background:s.bg, color:s.color, border:`1px solid ${s.border}` }}>
+      <span style={{ width:6, height:6, borderRadius:"50%", flexShrink:0, background:s.color }}/>
       {s.label}
     </span>
   );
@@ -489,10 +487,10 @@ const ChartCard = ({ title, children, cols=1 }) => (
 const ChartTooltip = ({ active, payload, label, unit="" }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white border border-[rgba(12,10,9,0.10)] rounded-lg shadow-lg px-3 py-2">
-      {label && <p className="text-xs text-[#A6A09B] mb-1">{label}</p>}
+    <div style={{ background:"#fff", border:"1px solid rgba(12,10,9,0.10)", borderRadius:8, boxShadow:"0 4px 12px rgba(0,0,0,0.1)", padding:"8px 12px" }}>
+      {label && <p style={{ fontSize:12, color:"#A6A09B", margin:"0 0 4px" }}>{label}</p>}
       {payload.map((p,i) => (
-        <p key={i} className="text-sm font-bold" style={{ color:p.color||"#0C0A09", fontFamily:"'DM Mono', monospace" }}>
+        <p key={i} style={{ fontSize:14, fontWeight:700, color:p.color||"#0C0A09", fontFamily:"'DM Mono', monospace", margin:0 }}>
           {p.name}: {p.value}{unit}
         </p>
       ))}
@@ -600,45 +598,44 @@ const NPSScoreBar = ({ segments, score }) => {
 
   return (
     <ChartCard title="NPS Score global">
-      <div className="flex items-center justify-between mb-5">
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
         <div>
-          <div className="flex items-end gap-2">
-            <span className="text-5xl font-black text-[#0C0A09]" style={{ fontFamily:"'DM Mono', monospace", lineHeight:1 }}>{score}</span>
-            <span className="text-sm text-[#A6A09B] mb-1">/ +100</span>
+          <div style={{ display:"flex", alignItems:"flex-end", gap:8 }}>
+            <span style={{ fontSize:48, fontWeight:900, color:"#0C0A09", fontFamily:"'DM Mono', monospace", lineHeight:1 }}>{score}</span>
+            <span style={{ fontSize:14, color:"#A6A09B", marginBottom:4 }}>/ +100</span>
           </div>
-          <p className="text-xs text-[#A6A09B] mt-1">
+          <p style={{ fontSize:12, color:"#A6A09B", marginTop:4 }}>
             La mayoría de tus customers están en{" "}
-            <span className="font-bold" style={{ color:dominant.text }}>{dominant.label}</span>
+            <span style={{ fontWeight:700, color:dominant.text }}>{dominant.label}</span>
           </p>
         </div>
-        <div className="flex gap-3">
+        <div style={{ display:"flex", gap:12 }}>
           {zones.map(z => (
-            <div key={z.label} className="flex flex-col items-center px-4 py-2.5 rounded-xl border"
-              style={{ background:z.bg, borderColor:`${z.color}30` }}>
-              <span className="text-xl font-black" style={{ color:z.color, fontFamily:"'DM Mono', monospace", lineHeight:1 }}>{z.pct}%</span>
-              <span className="text-xs font-semibold mt-1" style={{ color:z.text }}>{z.label}</span>
-              <span className="text-[10px] text-[#A6A09B] mt-0.5">({z.range})</span>
+            <div key={z.label} style={{ display:"flex", flexDirection:"column", alignItems:"center", padding:"10px 16px", borderRadius:12, border:`1px solid ${z.color}30`, background:z.bg }}>
+              <span style={{ fontSize:20, fontWeight:900, color:z.color, fontFamily:"'DM Mono', monospace", lineHeight:1 }}>{z.pct}%</span>
+              <span style={{ fontSize:12, fontWeight:600, marginTop:4, color:z.text }}>{z.label}</span>
+              <span style={{ fontSize:10, color:"#A6A09B", marginTop:2 }}>({z.range})</span>
             </div>
           ))}
         </div>
       </div>
-      <div className="relative h-8 flex rounded-xl overflow-hidden gap-0.5">
+      <div style={{ position:"relative", height:32, display:"flex", borderRadius:12, overflow:"hidden", gap:2 }}>
         {zones.map((z,i) => (
-          <div key={z.label} className="flex items-center justify-center relative transition-all"
-            style={{
-              width:`${z.pct}%`, background:z.color,
-              opacity:z.label===dominant.label ? 1 : 0.5,
-              borderRadius:i===0?"8px 0 0 8px":i===zones.length-1?"0 8px 8px 0":0,
-            }}>
-            {z.pct>12 && <span className="text-white text-xs font-bold" style={{ fontFamily:"'DM Mono', monospace" }}>{z.pct}%</span>}
-            {z.label===dominant.label && <span className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-white shadow-sm"/>}
+          <div key={z.label} style={{
+            display:"flex", alignItems:"center", justifyContent:"center", position:"relative", transition:"all 0.2s",
+            width:`${z.pct}%`, background:z.color,
+            opacity:z.label===dominant.label ? 1 : 0.5,
+            borderRadius:i===0?"8px 0 0 8px":i===zones.length-1?"0 8px 8px 0":0,
+          }}>
+            {z.pct>12 && <span style={{ color:"#fff", fontSize:12, fontWeight:700, fontFamily:"'DM Mono', monospace" }}>{z.pct}%</span>}
+            {z.label===dominant.label && <span style={{ position:"absolute", top:-2, left:"50%", transform:"translateX(-50%)", width:6, height:6, borderRadius:"50%", background:"#fff", boxShadow:"0 1px 2px rgba(0,0,0,0.15)" }}/>}
           </div>
         ))}
       </div>
-      <div className="flex mt-2">
+      <div style={{ display:"flex", marginTop:8 }}>
         {zones.map(z => (
-          <div key={z.label} className="flex flex-col items-center" style={{ width:`${z.pct}%` }}>
-            <span className="text-[10px] text-[#A6A09B] font-medium">{z.label}</span>
+          <div key={z.label} style={{ display:"flex", flexDirection:"column", alignItems:"center", width:`${z.pct}%` }}>
+            <span style={{ fontSize:10, color:"#A6A09B", fontWeight:500 }}>{z.label}</span>
           </div>
         ))}
       </div>
@@ -704,7 +701,7 @@ const CESCharts = ({ d }) => (
 );
 
 const CSATCharts = ({ d }) => (
-  <div className="grid grid-cols-2 gap-4">
+  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
     <ChartCard title="Nivel de satisfacción">
       <ResponsiveContainer width="100%" height={150}>
         <PieChart>
@@ -714,11 +711,11 @@ const CSATCharts = ({ d }) => (
           <Tooltip content={<ChartTooltip unit="%"/>}/>
         </PieChart>
       </ResponsiveContainer>
-      <div className="flex flex-wrap justify-center gap-3 mt-1">
+      <div style={{ display:"flex", flexWrap:"wrap", justifyContent:"center", gap:12, marginTop:4 }}>
         {d.satisfaction.map(e => (
-          <div key={e.name} className="flex items-center gap-1.5 text-xs text-[#79716B]">
-            <span className="w-2 h-2 rounded-sm flex-shrink-0" style={{ background:e.fill }}/>
-            {e.name} <span className="font-bold text-[#44403B]">{e.value}%</span>
+          <div key={e.name} style={{ display:"flex", alignItems:"center", gap:6, fontSize:12, color:"#79716B" }}>
+            <span style={{ width:8, height:8, borderRadius:2, flexShrink:0, background:e.fill }}/>
+            {e.name} <span style={{ fontWeight:700, color:"#44403B" }}>{e.value}%</span>
           </div>
         ))}
       </div>
@@ -744,7 +741,7 @@ const CSATCharts = ({ d }) => (
 );
 
 const PMFCharts = ({ d }) => (
-  <div className="grid grid-cols-2 gap-4">
+  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
     <ChartCard title="Dimensiones de PMF">
       <ResponsiveContainer width="100%" height={180}>
         <RadarChart data={d.dimensions}>
@@ -764,11 +761,11 @@ const PMFCharts = ({ d }) => (
           <Tooltip content={<ChartTooltip unit="%"/>}/>
         </PieChart>
       </ResponsiveContainer>
-      <div className="flex flex-wrap justify-center gap-3 mt-1">
+      <div style={{ display:"flex", flexWrap:"wrap", justifyContent:"center", gap:12, marginTop:4 }}>
         {d.mustHave.map(e => (
-          <div key={e.label} className="flex items-center gap-1.5 text-xs text-[#79716B]">
-            <span className="w-2 h-2 rounded-sm flex-shrink-0" style={{ background:e.fill }}/>
-            {e.label} <span className="font-bold text-[#44403B]">{e.value}%</span>
+          <div key={e.label} style={{ display:"flex", alignItems:"center", gap:6, fontSize:12, color:"#79716B" }}>
+            <span style={{ width:8, height:8, borderRadius:2, flexShrink:0, background:e.fill }}/>
+            {e.label} <span style={{ fontWeight:700, color:"#44403B" }}>{e.value}%</span>
           </div>
         ))}
       </div>
@@ -777,7 +774,7 @@ const PMFCharts = ({ d }) => (
 );
 
 const CCRCharts = ({ d }) => (
-  <div className="grid grid-cols-2 gap-4">
+  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
     <ChartCard title="Razones de cancelación">
       <ResponsiveContainer width="100%" height={180}>
         <BarChart data={d.reasons} layout="vertical" margin={{ top:0,right:20,bottom:0,left:10 }}>
@@ -813,19 +810,18 @@ const CCRCharts = ({ d }) => (
 
 const OpenCharts = ({ d }) => (
   <ChartCard title="Temas identificados" cols={2}>
-    <div className="space-y-2.5">
+    <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
       {d.themes.map((t,i) => {
         const sentColor = t.sentiment==="positive"?"#00975C":t.sentiment==="negative"?"#CB4644":"#d97706";
         const max = Math.max(...d.themes.map(x=>x.count));
         return (
-          <div key={i} className="flex items-center gap-3">
-            <span className="text-xs font-medium text-[#57534D] w-36 flex-shrink-0 truncate">{t.theme}</span>
-            <div className="flex-1 h-3 bg-[#F5F5F4] rounded-full overflow-hidden">
-              <div className="h-full rounded-full transition-all" style={{ width:`${(t.count/max)*100}%`, background:sentColor, opacity:0.7 }}/>
+          <div key={i} style={{ display:"flex", alignItems:"center", gap:12 }}>
+            <span style={{ fontSize:12, fontWeight:500, color:"#57534D", width:144, flexShrink:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{t.theme}</span>
+            <div style={{ flex:1, height:12, background:"#F5F5F4", borderRadius:99, overflow:"hidden" }}>
+              <div style={{ height:"100%", borderRadius:99, transition:"all 0.3s", width:`${(t.count/max)*100}%`, background:sentColor, opacity:0.7 }}/>
             </div>
-            <span className="text-xs font-bold w-6 text-right" style={{ color:sentColor, fontFamily:"'DM Mono', monospace" }}>{t.count}</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold w-16 text-center flex-shrink-0"
-              style={{ background:`${sentColor}15`, color:sentColor }}>{t.sentiment}</span>
+            <span style={{ fontSize:12, fontWeight:700, width:24, textAlign:"right", color:sentColor, fontFamily:"'DM Mono', monospace" }}>{t.count}</span>
+            <span style={{ fontSize:10, padding:"2px 6px", borderRadius:4, fontWeight:600, width:64, textAlign:"center", flexShrink:0, background:`${sentColor}15`, color:sentColor }}>{t.sentiment}</span>
           </div>
         );
       })}
@@ -1348,28 +1344,30 @@ const QuestionsTab = ({ survey }) => {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-5">
-        <p className="text-sm font-semibold text-[#44403B]">
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
+        <p style={{ fontSize:14, fontWeight:600, color:"#44403B", margin:0 }}>
           {questions.length} preguntas
-          {canReorder && <span className="ml-2 text-xs font-normal text-[#A6A09B]">· Arrastra para reordenar</span>}
+          {canReorder && <span style={{ marginLeft:8, fontSize:12, fontWeight:400, color:"#A6A09B" }}>· Arrastra para reordenar</span>}
         </p>
-        <div className="flex items-center gap-2">
+        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
           {canReorder && hasChanges && (
             <button onClick={() => { setSaved(true); setHasChanges(false); setTimeout(()=>setSaved(false),3000); }}
-              className="px-4 py-2 rounded-lg text-sm font-bold text-white transition-all active:scale-95 shadow-sm"
-              style={{ background:saved?"#00975C":"#E26500" }}>
+              style={{ padding:"8px 16px", borderRadius:8, fontSize:13, fontWeight:700, color:"#fff", border:"none", cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s", boxShadow:"0 1px 3px rgba(0,0,0,0.1)", background:saved?"#00975C":"#E26500" }}>
               {saved ? "✓ Guardado" : "Guardar orden"}
             </button>
           )}
-          <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold ${
-            canReorder ? "bg-green-50 border-green-200 text-green-700" : "bg-[#FAFAF9] border-[rgba(12,10,9,0.10)] text-[#A6A09B]"
-          }`}>
-            {canReorder ? <><span className="w-1.5 h-1.5 rounded-full bg-green-500"/>Encuesta activa — reordenamiento habilitado</> : "🔒 Solo lectura"}
+          <div style={{
+            display:"flex", alignItems:"center", gap:6, padding:"6px 12px", borderRadius:8, fontSize:12, fontWeight:600,
+            background: canReorder ? "#f0fdf4" : "#FAFAF9",
+            border: canReorder ? "1px solid #bbf7d0" : "1px solid rgba(12,10,9,0.10)",
+            color: canReorder ? "#15803d" : "#A6A09B",
+          }}>
+            {canReorder ? <><span style={{ width:6, height:6, borderRadius:"50%", background:"#22c55e", flexShrink:0 }}/>Encuesta activa — reordenamiento habilitado</> : "🔒 Solo lectura"}
           </div>
         </div>
       </div>
 
-      <div className="space-y-2">
+      <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
         {questions.map((q,idx) => {
           const cfg = QTYPE_CFG[q.type] || QTYPE_CFG.text;
           const isDraggingThis = dragging===idx;
@@ -1381,37 +1379,42 @@ const QuestionsTab = ({ survey }) => {
               onDragOver={canReorder?(e)=>handleDragOver(e,idx):undefined}
               onDrop={canReorder?(e)=>handleDrop(e,idx):undefined}
               onDragEnd={canReorder?handleDragEnd:undefined}
-              style={{ opacity:isDraggingThis?0.4:1, transform:isDragTarget?"translateY(-2px)":"none", cursor:canReorder?"grab":"default" }}
-              className="transition-all">
-              <div className={`bg-white rounded-xl border shadow-sm transition-all flex ${
-                isDragTarget ? "border-[#E26500] shadow-md ring-2 ring-[#FFE4D4]" : "border-[rgba(12,10,9,0.10)]"
-              }`}>
+              style={{ opacity:isDraggingThis?0.4:1, transform:isDragTarget?"translateY(-2px)":"none", cursor:canReorder?"grab":"default", transition:"all 0.15s" }}>
+              <div style={{
+                background:"#fff", borderRadius:12, boxShadow: isDragTarget ? "0 4px 12px rgba(226,101,0,0.12)" : "0 1px 2px rgba(12,10,9,0.04)",
+                border: isDragTarget ? "1px solid #E26500" : "1px solid rgba(12,10,9,0.10)",
+                display:"flex", transition:"all 0.15s",
+                ...(isDragTarget ? { outline:"2px solid #FFE4D4" } : {}),
+              }}>
                 {/* Order / handle */}
-                <div className={`flex flex-col items-center justify-center px-4 gap-2 border-r rounded-l-xl flex-shrink-0 self-stretch ${
-                  isDragTarget ? "border-blue-200 bg-[#FFFAEA]/50" : "border-[rgba(12,10,9,0.06)] bg-[#FAFAF9]/60"
-                }`}>
+                <div style={{
+                  display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"0 16px", gap:8,
+                  borderRight: isDragTarget ? "1px solid #bfdbfe" : "1px solid rgba(12,10,9,0.06)",
+                  borderRadius:"12px 0 0 12px", flexShrink:0, alignSelf:"stretch",
+                  background: isDragTarget ? "rgba(255,250,234,0.5)" : "rgba(250,250,249,0.6)",
+                }}>
                   {canReorder && (
-                    <div className="flex flex-col gap-0.5 opacity-40 hover:opacity-70">
-                      <div className="w-3.5 h-0.5 bg-gray-400 rounded"/><div className="w-3.5 h-0.5 bg-gray-400 rounded"/><div className="w-3.5 h-0.5 bg-gray-400 rounded"/>
+                    <div style={{ display:"flex", flexDirection:"column", gap:2, opacity:0.4 }}>
+                      <div style={{ width:14, height:2, background:"#9ca3af", borderRadius:1 }}/><div style={{ width:14, height:2, background:"#9ca3af", borderRadius:1 }}/><div style={{ width:14, height:2, background:"#9ca3af", borderRadius:1 }}/>
                     </div>
                   )}
-                  <span className="text-xs font-black text-[#A6A09B] mt-1" style={{ fontFamily:"'DM Mono', monospace" }}>{String(q.order).padStart(2,"0")}</span>
+                  <span style={{ fontSize:12, fontWeight:900, color:"#A6A09B", marginTop:4, fontFamily:"'DM Mono', monospace" }}>{String(q.order).padStart(2,"0")}</span>
                 </div>
                 {/* Content */}
-                <div className="flex-1 px-4 py-4 min-w-0">
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="text-sm font-semibold text-[#292524] leading-snug flex-1">{q.text}</p>
-                    <div className="flex items-center gap-1.5 flex-shrink-0">
-                      {q.required && <span className="text-xs px-2 py-0.5 rounded-md bg-red-50 text-red-500 font-semibold border border-red-100">requerida</span>}
-                      <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold" style={{ background:cfg.bg, color:cfg.color }}>{cfg.icon} {cfg.label}</span>
+                <div style={{ flex:1, padding:16, minWidth:0 }}>
+                  <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:12 }}>
+                    <p style={{ fontSize:14, fontWeight:600, color:"#292524", lineHeight:1.4, flex:1, margin:0 }}>{q.text}</p>
+                    <div style={{ display:"flex", alignItems:"center", gap:6, flexShrink:0 }}>
+                      {q.required && <span style={{ fontSize:12, padding:"2px 8px", borderRadius:6, background:"#fef2f2", color:"#ef4444", fontWeight:600, border:"1px solid #fecaca" }}>requerida</span>}
+                      <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:12, padding:"4px 8px", borderRadius:8, fontWeight:600, background:cfg.bg, color:cfg.color }}>{cfg.icon} {cfg.label}</span>
                     </div>
                   </div>
-                  <p className="text-xs text-[#A6A09B] mt-1.5">{cfg.desc}</p>
+                  <p style={{ fontSize:12, color:"#A6A09B", marginTop:6 }}>{cfg.desc}</p>
                   {q.options?.length>0 && (
-                    <div className="flex flex-wrap gap-1.5 mt-2.5">
+                    <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginTop:10 }}>
                       {q.options.map((opt,j) => (
-                        <span key={j} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 bg-[#F5F5F4] text-[#57534D] rounded-full border border-[rgba(12,10,9,0.10)]">
-                          <span className="w-1 h-1 rounded-full bg-gray-400 flex-shrink-0"/>{opt}
+                        <span key={j} style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:12, padding:"4px 10px", background:"#F5F5F4", color:"#57534D", borderRadius:99, border:"1px solid rgba(12,10,9,0.10)" }}>
+                          <span style={{ width:4, height:4, borderRadius:"50%", background:"#9ca3af", flexShrink:0 }}/>{opt}
                         </span>
                       ))}
                     </div>
@@ -1420,11 +1423,11 @@ const QuestionsTab = ({ survey }) => {
                 </div>
                 {/* Arrow controls */}
                 {canReorder && (
-                  <div className="flex flex-col items-center justify-center gap-1 px-3 self-stretch border-l border-[rgba(12,10,9,0.06)]">
+                  <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:4, padding:"0 12px", alignSelf:"stretch", borderLeft:"1px solid rgba(12,10,9,0.06)" }}>
                     <button onClick={()=>moveUp(idx)} disabled={idx===0}
-                      className={`w-6 h-6 rounded-md flex items-center justify-center text-xs transition-all ${idx===0?"text-gray-200 cursor-not-allowed":"text-[#A6A09B] hover:bg-[#F5F5F4] hover:text-[#44403B]"}`}>↑</button>
+                      style={{ width:24, height:24, borderRadius:6, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, border:"none", cursor:idx===0?"not-allowed":"pointer", background:"transparent", color:idx===0?"#e5e7eb":"#A6A09B", fontFamily:"inherit", transition:"all 0.15s" }}>↑</button>
                     <button onClick={()=>moveDown(idx)} disabled={idx===questions.length-1}
-                      className={`w-6 h-6 rounded-md flex items-center justify-center text-xs transition-all ${idx===questions.length-1?"text-gray-200 cursor-not-allowed":"text-[#A6A09B] hover:bg-[#F5F5F4] hover:text-[#44403B]"}`}>↓</button>
+                      style={{ width:24, height:24, borderRadius:6, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, border:"none", cursor:idx===questions.length-1?"not-allowed":"pointer", background:"transparent", color:idx===questions.length-1?"#e5e7eb":"#A6A09B", fontFamily:"inherit", transition:"all 0.15s" }}>↓</button>
                   </div>
                 )}
               </div>
@@ -1438,19 +1441,20 @@ const QuestionsTab = ({ survey }) => {
 
 // ─── BREADCRUMBS ─────────────────────────────────────────────────────────────
 const Breadcrumbs = ({ crumbs }) => (
-  <div className="flex items-center gap-1.5 flex-wrap">
+  <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" }}>
     {crumbs.map((crumb,i) => {
       const isLast = i===crumbs.length-1;
       return (
-        <div key={i} className="flex items-center gap-1.5">
+        <div key={i} style={{ display:"flex", alignItems:"center", gap:6 }}>
           {i>0 && (
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
               <path d="M4 2.5L7.5 6L4 9.5" stroke="#D6D3D1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           )}
           {isLast
-            ? <span className="text-xs font-semibold text-[#44403B] truncate max-w-[200px]">{crumb.label}</span>
-            : <button onClick={crumb.onClick} className="text-xs font-medium text-[#A6A09B] hover:text-[#C55300] transition-colors truncate max-w-[160px]">{crumb.label}</button>
+            ? <span style={{ fontSize:12, fontWeight:600, color:"#44403B", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:200 }}>{crumb.label}</span>
+            : <button onClick={crumb.onClick} style={{ fontSize:12, fontWeight:500, color:"#A6A09B", background:"none", border:"none", cursor:"pointer", fontFamily:"inherit", padding:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", maxWidth:160, transition:"color 0.15s" }}
+                onMouseEnter={e=>{e.target.style.color="#C55300"}} onMouseLeave={e=>{e.target.style.color="#A6A09B"}}>{crumb.label}</button>
           }
         </div>
       );
@@ -1605,11 +1609,11 @@ const SurveyBuilder = ({ onBack }) => {
 
   return (
     <div>
-      <div className="max-w-3xl mx-auto">
+      <div style={{ maxWidth:768, margin:"0 auto" }}>
         <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:4 }}>
           <div>
-            <h1 className="text-2xl font-black text-[#0C0A09] tracking-tight mb-1">Constructor IA</h1>
-            <p className="text-sm text-[#A6A09B] mb-5">Describe qué quieres medir y la IA generará la encuesta ideal.</p>
+            <h1 style={{ fontSize:22, fontWeight:800, color:"#0C0A09", letterSpacing:"-0.02em", margin:"0 0 4px" }}>Constructor IA</h1>
+            <p style={{ fontSize:13, color:"#A6A09B", margin:"0 0 20px" }}>Describe qué quieres medir y la IA generará la encuesta ideal.</p>
           </div>
           {step===1 && (
             <button onClick={() => { setStep(0); setResult(null); }}
@@ -1623,36 +1627,45 @@ const SurveyBuilder = ({ onBack }) => {
         {step === 0 && (
         <div style={{ animation:"fadeUp 0.2s ease" }}>
 
-
         {/* Prompt input */}
-        <div className="bg-white rounded-xl border border-[rgba(12,10,9,0.10)] shadow-sm p-5 mb-4">
-          <p className="text-xs font-semibold text-[#A6A09B] uppercase tracking-widest mb-3">Describe tu necesidad</p>
+        <div style={{ background:"#fff", borderRadius:12, border:"1px solid rgba(12,10,9,0.10)", boxShadow:"0 1px 3px rgba(12,10,9,0.06)", padding:20, marginBottom:16 }}>
+          <p style={{ fontSize:12, fontWeight:600, color:"#A6A09B", textTransform:"uppercase", letterSpacing:"0.1em", margin:"0 0 12px" }}>Describe tu necesidad</p>
           <textarea ref={taRef} value={prompt} rows={4} onChange={e=>setPrompt(e.target.value)}
             onKeyDown={e=>{ if(e.key==="Enter"&&e.metaKey) handleGenerate(); }}
             placeholder="Ej: Quiero entender por qué mis usuarios abandonan el checkout…"
-            className="w-full bg-[#FAFAF9] border border-[rgba(12,10,9,0.10)] rounded-lg p-3 text-sm text-[#292524] placeholder-gray-300 resize-none transition-all"
-            style={{ outline:"none" }}
+            style={{
+              width:"100%", background:"#FAFAF9", border:"1px solid rgba(12,10,9,0.10)", borderRadius:8,
+              padding:12, fontSize:13, color:"#292524", resize:"none", fontFamily:"inherit",
+              outline:"none", transition:"all 0.15s",
+            }}
             onFocus={e=>{ e.target.style.borderColor="#E26500"; e.target.style.boxShadow="0 0 0 3px rgba(226,101,0,0.12)"; }}
-            onBlur={e=>{ e.target.style.borderColor="#E7E5E4"; e.target.style.boxShadow="none"; }}/>
-          <div className="flex items-center justify-between mt-3">
-            <span className="text-xs text-[#D6D3D1]">⌘ + Enter para generar</span>
+            onBlur={e=>{ e.target.style.borderColor="rgba(12,10,9,0.10)"; e.target.style.boxShadow="none"; }}/>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:12 }}>
+            <span style={{ fontSize:12, color:"#D6D3D1" }}>⌘ + Enter para generar</span>
             <button onClick={handleGenerate} disabled={!prompt.trim()||loading}
-              className="px-5 py-2 rounded-lg text-sm font-bold text-white transition-all active:scale-95"
-              style={!prompt.trim()||loading
-                ? { background:"#f1f5f9", color:"#cbd5e1", cursor:"not-allowed" }
-                : { background:"#E26500", boxShadow:"0 2px 8px rgba(226,101,0,0.3)" }}>
+              style={{
+                padding:"8px 20px", borderRadius:8, fontSize:13, fontWeight:700, border:"none", fontFamily:"inherit", transition:"all 0.15s",
+                ...(!prompt.trim()||loading
+                  ? { background:"#f1f5f9", color:"#cbd5e1", cursor:"not-allowed" }
+                  : { background:"#E26500", color:"#fff", cursor:"pointer", boxShadow:"0 2px 8px rgba(226,101,0,0.3)" }),
+              }}>
               {loading ? "Generando…" : "Generar encuesta →"}
             </button>
           </div>
         </div>
 
         {/* Quick examples */}
-        <div className="mb-8">
-          <p className="text-xs text-[#D6D3D1] uppercase tracking-widest font-semibold mb-2">Ejemplos rápidos</p>
-          <div className="flex flex-wrap gap-2">
+        <div style={{ marginBottom:32 }}>
+          <p style={{ fontSize:12, color:"#D6D3D1", textTransform:"uppercase", letterSpacing:"0.1em", fontWeight:600, margin:"0 0 8px" }}>Ejemplos rápidos</p>
+          <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
             {EXAMPLES.map((ex,i) => (
               <button key={i} onClick={()=>{ setPrompt(ex); taRef.current?.focus(); }}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[rgba(12,10,9,0.10)] text-[#79716B] text-xs rounded-full hover:border-blue-300 hover:text-[#C55300] transition-all text-left">
+                style={{
+                  display:"flex", alignItems:"center", gap:6, padding:"6px 12px",
+                  background:"#fff", border:"1px solid rgba(12,10,9,0.10)", color:"#79716B",
+                  fontSize:12, borderRadius:99, cursor:"pointer", fontFamily:"inherit",
+                  textAlign:"left", transition:"all 0.15s",
+                }}>
                 <span>{SURVEY_TYPES[EXAMPLE_TYPES[i]]?.icon}</span>
                 {ex}
               </button>
@@ -1662,48 +1675,46 @@ const SurveyBuilder = ({ onBack }) => {
 
         {/* Loading */}
         {loading && (
-          <div className="bg-white border border-[rgba(12,10,9,0.10)] rounded-xl p-10 text-center shadow-sm">
-            <div className="text-3xl mb-3" style={{ animation:"spin 1.2s linear infinite", display:"inline-block" }}>⚙️</div>
-            <p className="text-sm text-[#A6A09B]">Analizando contexto y generando preguntas…</p>
+          <div style={{ background:"#fff", border:"1px solid rgba(12,10,9,0.10)", borderRadius:12, padding:40, textAlign:"center", boxShadow:"0 1px 3px rgba(12,10,9,0.06)" }}>
+            <div style={{ fontSize:30, marginBottom:12, animation:"spin 1.2s linear infinite", display:"inline-block" }}>⚙️</div>
+            <p style={{ fontSize:13, color:"#A6A09B", margin:0 }}>Analizando contexto y generando preguntas…</p>
           </div>
         )}
 
         {/* Error */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600">{error}</div>
+          <div style={{ background:"#fef2f2", border:"1px solid #fecaca", borderRadius:12, padding:16, fontSize:13, color:"#dc2626" }}>{error}</div>
         )}
         </div>
         )}
 
         {/* Step 1: Result */}
         {step === 1 && result && (
-          <div className="bg-white border border-[rgba(12,10,9,0.10)] rounded-xl p-5 shadow-sm" style={{ animation:"fadeUp 0.3s ease" }}>
-            <div className="flex items-start justify-between mb-4">
+          <div style={{ background:"#fff", border:"1px solid rgba(12,10,9,0.10)", borderRadius:12, padding:20, boxShadow:"0 1px 3px rgba(12,10,9,0.06)", animation:"fadeUp 0.3s ease" }}>
+            <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:16 }}>
               <div>
-                <div className="flex items-center gap-2 mb-1">
+                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
                   <TypeTag type={result.type}/>
-                  <h2 className="text-base font-bold text-[#0C0A09]">{result.name}</h2>
+                  <h2 style={{ fontSize:16, fontWeight:700, color:"#0C0A09", margin:0 }}>{result.name}</h2>
                 </div>
-                <p className="text-xs text-[#A6A09B]">{result.rationale}</p>
+                <p style={{ fontSize:12, color:"#A6A09B", margin:0 }}>{result.rationale}</p>
               </div>
             </div>
-            <div className="space-y-2 mb-4">
+            <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:16 }}>
               {result.questions?.map((q,i) => {
                 const qt = QTYPE_CFG[q.type] || QTYPE_CFG.text;
                 return (
-                  <div key={q.id} className="bg-white border border-[rgba(12,10,9,0.10)] rounded-xl px-4 py-3.5 shadow-sm flex gap-3 items-start">
-                    <div className="w-7 h-7 rounded-lg bg-[#F5F5F4] flex items-center justify-center text-xs text-[#A6A09B] flex-shrink-0 mt-0.5"
-                      style={{ fontFamily:"'DM Mono', monospace" }}>{i+1}</div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-[#292524] font-medium mb-2" dir={isRTL(q.text)?"rtl":"ltr"}>{q.text}</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-md font-medium"
-                          style={{ background:qt.bg, color:qt.color }}>{qt.icon} {qt.label}</span>
-                        {q.required && <span className="text-xs px-2 py-0.5 rounded-md bg-red-50 text-red-500 font-medium">requerida</span>}
+                  <div key={q.id} style={{ background:"#fff", border:"1px solid rgba(12,10,9,0.10)", borderRadius:12, padding:"14px 16px", boxShadow:"0 1px 2px rgba(12,10,9,0.04)", display:"flex", gap:12, alignItems:"flex-start" }}>
+                    <div style={{ width:28, height:28, borderRadius:8, background:"#F5F5F4", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, color:"#A6A09B", flexShrink:0, marginTop:2, fontFamily:"'DM Mono', monospace" }}>{i+1}</div>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <p style={{ fontSize:14, color:"#292524", fontWeight:500, margin:"0 0 8px" }} dir={isRTL(q.text)?"rtl":"ltr"}>{q.text}</p>
+                      <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
+                        <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:12, padding:"2px 8px", borderRadius:6, fontWeight:500, background:qt.bg, color:qt.color }}>{qt.icon} {qt.label}</span>
+                        {q.required && <span style={{ fontSize:12, padding:"2px 8px", borderRadius:6, background:"#fef2f2", color:"#ef4444", fontWeight:500 }}>requerida</span>}
                       </div>
                       {q.options?.length>0 && (
-                        <div className="flex flex-wrap gap-1.5 mt-2">
-                          {q.options.map((opt,j) => <span key={j} className="text-xs px-2.5 py-1 bg-[#F5F5F4] text-[#57534D] rounded-full">{opt}</span>)}
+                        <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginTop:8 }}>
+                          {q.options.map((opt,j) => <span key={j} style={{ fontSize:12, padding:"4px 10px", background:"#F5F5F4", color:"#57534D", borderRadius:99 }}>{opt}</span>)}
                         </div>
                       )}
                     </div>
@@ -1711,14 +1722,13 @@ const SurveyBuilder = ({ onBack }) => {
                 );
               })}
             </div>
-            <div className="flex gap-2">
+            <div style={{ display:"flex", gap:8 }}>
               <button onClick={()=>{ setSaved(true); setTimeout(()=>setSaved(false),3000); }}
-                className="flex-1 py-2.5 rounded-lg text-sm font-bold text-white transition-all active:scale-95"
-                style={{ background:saved?"#00975C":"#E26500" }}>
+                style={{ flex:1, padding:"10px", borderRadius:8, fontSize:13, fontWeight:700, color:"#fff", border:"none", cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s", background:saved?"#00975C":"#E26500" }}>
                 {saved ? "✓ Guardada como borrador" : "Guardar como borrador"}
               </button>
               <button onClick={()=>{ setStep(0); setResult(null); setPrompt(""); }}
-                className="px-4 py-2.5 rounded-lg text-sm font-semibold bg-white border border-[rgba(12,10,9,0.10)] text-[#79716B] hover:border-[rgba(12,10,9,0.16)] transition-all">
+                style={{ padding:"10px 16px", borderRadius:8, fontSize:13, fontWeight:600, background:"#fff", border:"1px solid rgba(12,10,9,0.10)", color:"#79716B", cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s" }}>
                 Reiniciar
               </button>
             </div>
@@ -1743,22 +1753,27 @@ const SurveyOverview = ({ survey, onBack, tab, setTab }) => {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-start justify-between mb-6">
+      <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:24 }}>
         <div>
-          <div className="flex items-center gap-2 mb-2">
+          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
             <TypeTag type={survey.type}/>
             <StatusBadge status={survey.status}/>
           </div>
-          <h1 className="text-2xl font-black text-[#0C0A09] tracking-tight">{survey.name}</h1>
-          <p className="text-sm text-[#A6A09B] mt-1">Creada por {survey.creator} · {survey.questions} preguntas</p>
+          <h1 style={{ fontSize:22, fontWeight:800, color:"#0C0A09", letterSpacing:"-0.02em", margin:0 }}>{survey.name}</h1>
+          <p style={{ fontSize:13, color:"#A6A09B", marginTop:4 }}>Creada por {survey.creator} · {survey.questions} preguntas</p>
         </div>
-        <button className="px-4 py-2 rounded-lg text-sm font-semibold bg-white border border-[rgba(12,10,9,0.10)] text-[#79716B] hover:border-[rgba(12,10,9,0.16)] shadow-sm transition-all">
+        <button style={{
+          padding:"8px 16px", borderRadius:8, fontSize:13, fontWeight:600,
+          background:"#fff", border:"1px solid rgba(12,10,9,0.10)", color:"#79716B",
+          cursor:"pointer", fontFamily:"inherit", boxShadow:"0 1px 2px rgba(12,10,9,0.06)",
+          transition:"all 0.15s",
+        }}>
           Exportar ↓
         </button>
       </div>
 
       {/* KPI row */}
-      <div className="flex gap-3 flex-wrap mb-6">
+      <div style={{ display:"flex", gap:12, flexWrap:"wrap", marginBottom:24 }}>
         <MetricCard label="Total respuestas" value={survey.responses.toLocaleString()} accent="#0C0A09"/>
         {d.score && <MetricCard label={d.score.label} value={d.score.value} accent={d.score.accent}/>}
         <MetricCard label="Completación" value={`${d.completion.completed}%`} accent="#00975C" sub={`${d.completion.abandoned}% abandonaron`}/>
