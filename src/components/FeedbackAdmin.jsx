@@ -1001,26 +1001,72 @@ const PlanLineChart = ({ data }) => (
 );
 
 const DemographicsTab = ({ d }) => {
-  const maxRole = Math.max(...d.jobRoles.map(j=>j.value));
-  const maxAge  = Math.max(...d.ageGroups.map(a=>a.value));
   const maxCountry = Math.max(...d.countries.map(c=>c.value));
 
   const cardStyle = { background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, padding:"18px 20px", boxShadow:"0 1px 3px rgba(12,10,9,0.04)" };
   const labelStyle = { fontSize:11, fontWeight:700, color:T.textMuted, textTransform:"uppercase", letterSpacing:"0.08em", margin:"0 0 12px" };
 
-  const HBarList = ({ items, maxVal, nameKey="name", valKey="value", colorKey="fill", unit="%" }) => (
-    <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-      {items.map(item => (
-        <div key={item[nameKey]} style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <span style={{ fontSize:11, color:T.textMuted, width:120, flexShrink:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{item[nameKey]}</span>
-          <div style={{ flex:1, height:6, background:BDS.neutral[100], borderRadius:4, overflow:"hidden" }}>
-            <div style={{ height:"100%", width:`${(item[valKey]/maxVal)*100}%`, background:item[colorKey], borderRadius:4, transition:"width 0.3s ease" }}/>
-          </div>
-          <span style={{ fontSize:11, fontWeight:700, color:item[colorKey], fontFamily:"'DM Mono', monospace", width:32, textAlign:"right", flexShrink:0 }}>{item[valKey]}{unit}</span>
+  // Chart 1 — Género: Segmented horizontal bar
+  const GenderBar = () => {
+    const total = d.gender.reduce((s,g) => s + g.value, 0);
+    return (
+      <div>
+        <div style={{ display:"flex", height:28, borderRadius:6, overflow:"hidden", marginBottom:10 }}>
+          {d.gender.map((g,i) => (
+            <div key={i} style={{ width:`${(g.value/total)*100}%`, background:g.fill, transition:"width 0.3s", position:"relative", display:"flex", alignItems:"center", justifyContent:"center" }}>
+              {g.value >= 10 && <span style={{ fontSize:10, fontWeight:700, color:"#fff", fontFamily:"'DM Mono', monospace" }}>{g.value}%</span>}
+            </div>
+          ))}
+        </div>
+        <div style={{ display:"flex", flexWrap:"wrap", gap:"4px 12px" }}>
+          {d.gender.map(e => (
+            <div key={e.name} style={{ display:"flex", alignItems:"center", gap:4, fontSize:11, color:T.textMuted }}>
+              <span style={{ width:6, height:6, borderRadius:2, background:e.fill, flexShrink:0 }}/>
+              {e.name}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Chart 3 — Dispositivo: Big metric side-by-side
+  const DeviceMetrics = () => (
+    <div style={{ display:"flex", gap:12, height:"100%" }}>
+      {d.devices.map(dev => (
+        <div key={dev.name} style={{
+          flex:1, background:BDS.neutral[50], borderRadius:8, padding:"16px 12px",
+          display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
+          border:`1px solid ${T.borderSoft}`,
+        }}>
+          <span style={{ fontSize:28, fontWeight:800, color:dev.fill, fontFamily:"'DM Mono', monospace", lineHeight:1 }}>{dev.value}%</span>
+          <span style={{ fontSize:11, color:T.textMuted, marginTop:6, fontWeight:600 }}>{dev.name}</span>
         </div>
       ))}
     </div>
   );
+
+  // Chart 5 — Cargo/Rol: Treemap-style tag blocks
+  const RoleGrid = () => {
+    const maxRole = Math.max(...d.jobRoles.map(j=>j.value));
+    return (
+      <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
+        {d.jobRoles.map(j => {
+          const size = 0.5 + (j.value / maxRole) * 0.5; // scale 0.5–1
+          return (
+            <div key={j.role} style={{
+              padding:"6px 10px", borderRadius:6,
+              background:`${j.fill}14`, border:`1px solid ${j.fill}30`,
+              display:"flex", alignItems:"center", gap:6,
+            }}>
+              <span style={{ fontSize: Math.round(10 + size * 3), fontWeight:600, color:j.fill, fontFamily:"'DM Mono', monospace" }}>{j.value}%</span>
+              <span style={{ fontSize:10, color:T.textPrimary, fontWeight:500 }}>{j.role}</span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
 
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
@@ -1030,47 +1076,27 @@ const DemographicsTab = ({ d }) => {
 
         <div style={cardStyle}>
           <p style={labelStyle}>Género</p>
-          <ResponsiveContainer width="100%" height={130}>
-            <PieChart>
-              <Pie data={d.gender} cx="50%" cy="50%" innerRadius={36} outerRadius={54} dataKey="value" paddingAngle={3}>
-                {d.gender.map((e,i) => <Cell key={i} fill={e.fill}/>)}
-              </Pie>
-              <Tooltip content={<ChartTooltip unit="%"/>}/>
-            </PieChart>
-          </ResponsiveContainer>
-          <div style={{ display:"flex", flexWrap:"wrap", justifyContent:"center", gap:"4px 10px", marginTop:6 }}>
-            {d.gender.map(e => (
-              <div key={e.name} style={{ display:"flex", alignItems:"center", gap:4, fontSize:11, color:T.textMuted }}>
-                <span style={{ width:6, height:6, borderRadius:2, background:e.fill, flexShrink:0 }}/>
-                {e.name}
-              </div>
-            ))}
-          </div>
+          <GenderBar/>
         </div>
 
         <div style={cardStyle}>
           <p style={labelStyle}>Grupos de edad</p>
-          <HBarList items={d.ageGroups} maxVal={maxAge} nameKey="age" colorKey="fill"/>
+          <ResponsiveContainer width="100%" height={140}>
+            <BarChart data={d.ageGroups} margin={{ top:4, right:4, bottom:0, left:-20 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke={BDS.neutral[100]} vertical={false}/>
+              <XAxis dataKey="age" tick={{ fill:T.textMuted, fontSize:9 }} axisLine={false} tickLine={false}/>
+              <YAxis tick={{ fill:T.textMuted, fontSize:10 }} axisLine={false} tickLine={false} unit="%"/>
+              <Tooltip content={<ChartTooltip unit="%"/>}/>
+              <Bar dataKey="value" name="%" radius={[4,4,0,0]}>
+                {d.ageGroups.map((e,i) => <Cell key={i} fill={e.fill}/>)}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         </div>
 
         <div style={cardStyle}>
           <p style={labelStyle}>Dispositivo</p>
-          <ResponsiveContainer width="100%" height={130}>
-            <PieChart>
-              <Pie data={d.devices} cx="50%" cy="50%" innerRadius={36} outerRadius={54} dataKey="value" paddingAngle={3}>
-                {d.devices.map((e,i) => <Cell key={i} fill={e.fill}/>)}
-              </Pie>
-              <Tooltip content={<ChartTooltip unit="%"/>}/>
-            </PieChart>
-          </ResponsiveContainer>
-          <div style={{ display:"flex", flexWrap:"wrap", justifyContent:"center", gap:"4px 10px", marginTop:6 }}>
-            {d.devices.map(e => (
-              <div key={e.name} style={{ display:"flex", alignItems:"center", gap:4, fontSize:11, color:T.textMuted }}>
-                <span style={{ width:6, height:6, borderRadius:2, background:e.fill, flexShrink:0 }}/>
-                {e.name}
-              </div>
-            ))}
-          </div>
+          <DeviceMetrics/>
         </div>
       </div>
 
@@ -1079,12 +1105,22 @@ const DemographicsTab = ({ d }) => {
 
         <div style={cardStyle}>
           <p style={labelStyle}>País</p>
-          <HBarList items={d.countries} maxVal={maxCountry} nameKey="name" valKey="value" colorKey="color"/>
+          <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+            {d.countries.map(c => (
+              <div key={c.name} style={{ display:"flex", alignItems:"center", gap:10 }}>
+                <span style={{ fontSize:11, color:T.textMuted, width:80, flexShrink:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{c.name}</span>
+                <div style={{ flex:1, height:6, background:BDS.neutral[100], borderRadius:4, overflow:"hidden" }}>
+                  <div style={{ height:"100%", width:`${(c.value/maxCountry)*100}%`, background:c.color, borderRadius:4, transition:"width 0.3s ease" }}/>
+                </div>
+                <span style={{ fontSize:11, fontWeight:700, color:c.color, fontFamily:"'DM Mono', monospace", width:32, textAlign:"right", flexShrink:0 }}>{c.value}%</span>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div style={cardStyle}>
           <p style={labelStyle}>Cargo / Rol</p>
-          <HBarList items={d.jobRoles} maxVal={maxRole} nameKey="role" colorKey="fill"/>
+          <RoleGrid/>
         </div>
 
         <div style={cardStyle}>
