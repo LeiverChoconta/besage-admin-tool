@@ -1908,21 +1908,19 @@ const SurveyOverview = ({ survey, onBack, tab, setTab }) => {
           <h1 style={{ fontSize:22, fontWeight:800, color:"#0C0A09", letterSpacing:"-0.02em", margin:0 }}>{survey.name}</h1>
           <p style={{ fontSize:13, color:"#A6A09B", marginTop:4 }}>Creada por {survey.creator} · {survey.questions} preguntas</p>
         </div>
-        <button style={{
-          padding:"8px 16px", borderRadius:8, fontSize:13, fontWeight:600,
-          background:"#fff", border:"1px solid rgba(12,10,9,0.10)", color:"#79716B",
-          cursor:"pointer", fontFamily:"inherit", boxShadow:"0 1px 2px rgba(12,10,9,0.06)",
-          transition:"all 0.15s",
-        }}>
-          Exportar ↓
-        </button>
-      </div>
-
-      {/* KPI row */}
-      <div style={{ display:"flex", gap:12, flexWrap:"wrap", marginBottom:24 }}>
-        <MetricCard label="Total respuestas" value={survey.responses.toLocaleString()} accent="#0C0A09"/>
-        {d.score && <MetricCard label={d.score.label} value={d.score.value} accent={d.score.accent}/>}
-        <MetricCard label="Completación" value={`${d.completion.completed}%`} accent="#00975C" sub={`${d.completion.abandoned}% abandonaron`}/>
+        {/* KPI pills */}
+        <div style={{ display:"flex", gap:12 }}>
+          {[
+            { label:"Total respuestas", value:survey.responses.toLocaleString(), accent:"#0C0A09" },
+            ...(d.score ? [{ label:d.score.label, value:d.score.value, accent:d.score.accent }] : []),
+            { label:"Completación", value:`${d.completion.completed}%`, accent:"#00975C" },
+          ].map(k => (
+            <div key={k.label} style={{ background:BDS.neutral["000"], borderRadius:10, border:`1px solid ${T.borderSoft}`, padding:"10px 16px", textAlign:"center", minWidth:80 }}>
+              <p style={{ fontSize:18, fontWeight:800, color:k.accent, fontFamily:"'DM Mono', monospace", margin:0, lineHeight:1 }}>{k.value}</p>
+              <p style={{ fontSize:10, color:T.textMuted, margin:"4px 0 0", fontWeight:600, textTransform:"uppercase", letterSpacing:"0.06em" }}>{k.label}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Tab nav */}
