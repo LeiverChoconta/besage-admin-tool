@@ -380,8 +380,8 @@ const generateDetailData = (survey) => {
         {reason:"Otro",              value:4, fill:"#cbd5e1"},
       ],
       churnTrend:[
-        {month:"Oct",pct:18},{month:"Nov",pct:16},{month:"Dic",pct:15},
-        {month:"Ene",pct:14},{month:"Feb",pct:13},{month:"Mar",pct:14},
+        {month:"Oct",pct:18,retention:82},{month:"Nov",pct:16,retention:84},{month:"Dic",pct:15,retention:85},
+        {month:"Ene",pct:14,retention:86},{month:"Feb",pct:13,retention:87},{month:"Mar",pct:14,retention:86},
       ],
     },
     Open:{
@@ -883,20 +883,26 @@ const CCRCharts = ({ d }) => (
         </BarChart>
       </ResponsiveContainer>
     </ChartCard>
-    <ChartCard title="Tendencia de churn">
-      <ResponsiveContainer width="100%" height={150}>
+    <ChartCard title="Churn vs. Retención">
+      <ResponsiveContainer width="100%" height={180}>
         <AreaChart data={d.churnTrend} margin={{ top:4,right:4,bottom:0,left:-20 }}>
           <defs>
             <linearGradient id="ccrGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%"  stopColor="#ea580c" stopOpacity={0.15}/>
               <stop offset="95%" stopColor="#ea580c" stopOpacity={0}/>
             </linearGradient>
+            <linearGradient id="retGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%"  stopColor="#00975C" stopOpacity={0.12}/>
+              <stop offset="95%" stopColor="#00975C" stopOpacity={0}/>
+            </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false}/>
           <XAxis dataKey="month" tick={{ fill:"#94a3b8",fontSize:11 }} axisLine={false} tickLine={false}/>
-          <YAxis tick={{ fill:"#94a3b8",fontSize:11 }} axisLine={false} tickLine={false} unit="%"/>
+          <YAxis tick={{ fill:"#94a3b8",fontSize:11 }} axisLine={false} tickLine={false} unit="%" domain={[0,100]}/>
           <Tooltip content={<ChartTooltip unit="%"/>}/>
+          <Area type="monotone" dataKey="retention" name="Retención" stroke="#00975C" fill="url(#retGrad)" strokeWidth={2} dot={{ fill:"#00975C",r:3 }}/>
           <Area type="monotone" dataKey="pct" name="Churn" stroke="#ea580c" fill="url(#ccrGrad)" strokeWidth={2.5} dot={{ fill:"#ea580c",r:3 }}/>
+          <Legend iconType="circle" wrapperStyle={{ fontSize:11, paddingTop:8 }}/>
         </AreaChart>
       </ResponsiveContainer>
     </ChartCard>
