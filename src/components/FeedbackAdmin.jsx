@@ -2740,9 +2740,7 @@ const AssessmentOverview = ({ assessment, onBack }) => {
           {/* Row 1: Spider + Skill bars */}
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
 
-            {/* Radar / Spider chart */}
-            <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, padding:"18px 20px", boxShadow:"0 1px 3px rgba(12,10,9,0.04)" }}>
-              <p style={{ fontSize:11, fontWeight:700, color:T.textMuted, textTransform:"uppercase", letterSpacing:"0.08em", margin:"0 0 12px" }}>Perfil de habilidades</p>
+            <ChartCard title="Perfil de habilidades">
               <ResponsiveContainer width="100%" height={260}>
                 <RadarChart data={radarData} margin={{ top:10, right:20, bottom:10, left:20 }}>
                   <PolarGrid stroke={BDS.neutral[200]}/>
@@ -2752,7 +2750,6 @@ const AssessmentOverview = ({ assessment, onBack }) => {
                   <Tooltip content={({ active, payload }) => {
                     if (!active || !payload?.length) return null;
                     const d = payload[0].payload;
-                    const s = SKILL_MAP[d.skill];
                     return (
                       <div style={{ background:BDS.neutral[900], color:"#fff", borderRadius:8, padding:"8px 12px", fontSize:12 }}>
                         <p style={{ margin:0, fontWeight:700 }}>{d.label}</p>
@@ -2762,11 +2759,9 @@ const AssessmentOverview = ({ assessment, onBack }) => {
                   }}/>
                 </RadarChart>
               </ResponsiveContainer>
-            </div>
+            </ChartCard>
 
-            {/* Skill score bars */}
-            <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, padding:"18px 20px", boxShadow:"0 1px 3px rgba(12,10,9,0.04)" }}>
-              <p style={{ fontSize:11, fontWeight:700, color:T.textMuted, textTransform:"uppercase", letterSpacing:"0.08em", margin:"0 0 14px" }}>Puntaje por habilidad</p>
+            <ChartCard title="Puntaje por habilidad">
               <div style={{ display:"flex", flexDirection:"column", gap:9 }}>
                 {skillScores.sort((a,b)=>b.score-a.score).map(s => (
                   <div key={s.id} style={{ display:"flex", alignItems:"center", gap:10 }}>
@@ -2778,15 +2773,13 @@ const AssessmentOverview = ({ assessment, onBack }) => {
                   </div>
                 ))}
               </div>
-            </div>
+            </ChartCard>
           </div>
 
           {/* Row 2: Demographics */}
           <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16 }}>
 
-            {/* Género */}
-            <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, padding:"18px 20px", boxShadow:"0 1px 3px rgba(12,10,9,0.04)" }}>
-              <p style={{ fontSize:11, fontWeight:700, color:T.textMuted, textTransform:"uppercase", letterSpacing:"0.08em", margin:"0 0 10px" }}>Género</p>
+            <ChartCard title="Género">
               <ResponsiveContainer width="100%" height={120}>
                 <PieChart>
                   <Pie data={genderData} cx="50%" cy="50%" innerRadius={30} outerRadius={46} dataKey="value" paddingAngle={3}>
@@ -2803,11 +2796,9 @@ const AssessmentOverview = ({ assessment, onBack }) => {
                   </div>
                 ))}
               </div>
-            </div>
+            </ChartCard>
 
-            {/* Edad */}
-            <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, padding:"18px 20px", boxShadow:"0 1px 3px rgba(12,10,9,0.04)" }}>
-              <p style={{ fontSize:11, fontWeight:700, color:T.textMuted, textTransform:"uppercase", letterSpacing:"0.08em", margin:"0 0 10px" }}>Rango de edad</p>
+            <ChartCard title="Rango de edad">
               <ResponsiveContainer width="100%" height={150}>
                 <BarChart data={ageData} margin={{ top:4, right:4, bottom:0, left:-24 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke={BDS.neutral[100]} vertical={false}/>
@@ -2817,11 +2808,9 @@ const AssessmentOverview = ({ assessment, onBack }) => {
                   <Bar dataKey="count" name="Personas" radius={[3,3,0,0]} fill={BDS.secondary[500]}/>
                 </BarChart>
               </ResponsiveContainer>
-            </div>
+            </ChartCard>
 
-            {/* Profesión */}
-            <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, padding:"18px 20px", boxShadow:"0 1px 3px rgba(12,10,9,0.04)" }}>
-              <p style={{ fontSize:11, fontWeight:700, color:T.textMuted, textTransform:"uppercase", letterSpacing:"0.08em", margin:"0 0 12px" }}>Profesión</p>
+            <ChartCard title="Profesión">
               <div style={{ display:"flex", flexDirection:"column", gap:7 }}>
                 {jobData.map(j => (
                   <div key={j.job} style={{ display:"flex", alignItems:"center", gap:8 }}>
@@ -2833,7 +2822,7 @@ const AssessmentOverview = ({ assessment, onBack }) => {
                   </div>
                 ))}
               </div>
-            </div>
+            </ChartCard>
           </div>
         </div>
       )}
