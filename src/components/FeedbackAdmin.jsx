@@ -1764,6 +1764,35 @@ const EXAMPLES = [
 ];
 const EXAMPLE_TYPES = ["CES","CCR","PMF","Open"];
 
+// ─── CONTEXT QUESTIONS (shared) ───────────────────────────────────────────────
+const SURVEY_AUDIENCES = ["Clientes","Usuarios","Prospectos","Empleados","Líderes","Equipo específico"];
+const SURVEY_OBJECTIVES = ["Medir satisfacción","Identificar fricciones","Evaluar producto-mercado","Recoger feedback abierto","Medir esfuerzo","Entender churn"];
+const ASSESSMENT_AUDIENCES = ["Líderes","Mandos medios","Equipos operativos","Toda la organización","Área específica"];
+const ASSESSMENT_OBJECTIVES = ["Detectar brechas de habilidades","Medir competencias actuales","Planificar desarrollo","Evaluar cultura de equipo","Identificar fortalezas"];
+
+const ChipSelector = ({ label, options, selected, onSelect }) => (
+  <div style={{ marginBottom:16 }}>
+    <p style={{ fontSize:12, fontWeight:600, color:T.textMuted, textTransform:"uppercase", letterSpacing:"0.07em", margin:"0 0 10px" }}>{label}</p>
+    <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
+      {options.map(opt => {
+        const active = selected === opt;
+        return (
+          <button key={opt} onClick={() => onSelect(active ? "" : opt)}
+            style={{
+              padding:"7px 14px", borderRadius:99, fontSize:12, fontWeight:active ? 700 : 500,
+              border: active ? `1.5px solid ${BDS.primary[500]}` : `1px solid ${T.borderSoft}`,
+              background: active ? BDS.primary[50] : BDS.neutral["000"],
+              color: active ? BDS.primary[600] : T.textMuted,
+              cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s",
+            }}>
+            {opt}
+          </button>
+        );
+      })}
+    </div>
+  </div>
+);
+
 // ─── STEPPER SHARED COMPONENT ──────────────────────────────
 const BuilderStepper = ({ steps, current }) => (
   <div style={{ display:"flex", alignItems:"center", gap:0, marginBottom:24 }}>
@@ -1795,6 +1824,8 @@ const BuilderStepper = ({ steps, current }) => (
 const SurveyBuilder = ({ onBack }) => {
   const [step,     setStep]     = useState(0);
   const [prompt,   setPrompt]   = useState("");
+  const [audience, setAudience] = useState("");
+  const [objective,setObjective]= useState("");
   const [loading,  setLoading]  = useState(false);
   const [result,   setResult]   = useState(null);
   const [error,    setError]    = useState(null);
@@ -1803,10 +1834,17 @@ const SurveyBuilder = ({ onBack }) => {
   const taRef = useRef(null);
   const SB_STEPS = ["Configurar", "Revisar preguntas"];
 
+  const buildEnrichedPrompt = () => {
+    let enriched = prompt;
+    if (audience) enriched = `Audiencia: ${audience}. ` + enriched;
+    if (objective) enriched = `Objetivo: ${objective}. ` + enriched;
+    return enriched;
+  };
+
   const handleGenerate = async () => {
     if (!prompt.trim()||loading) return;
     setLoading(true); setError(null); setResult(null);
-    try { const r = await generateSurveyWithAI(prompt); setResult(r); setStep(1); }
+    try { const r = await generateSurveyWithAI(buildEnrichedPrompt()); setResult(r); setStep(1); }
     catch(e) { setError("No se pudo generar la encuesta. Revisa la conexión."); }
     setLoading(false);
   };
@@ -1832,6 +1870,12 @@ const SurveyBuilder = ({ onBack }) => {
 
         {step === 0 && (
         <div style={{ animation:"fadeUp 0.2s ease" }}>
+
+        {/* Context questions */}
+        <div style={{ background:"#fff", borderRadius:12, border:"1px solid rgba(12,10,9,0.10)", boxShadow:"0 1px 3px rgba(12,10,9,0.06)", padding:20, marginBottom:16 }}>
+          <ChipSelector label="¿A quién va dirigida?" options={SURVEY_AUDIENCES} selected={audience} onSelect={setAudience}/>
+          <ChipSelector label="¿Cuál es el objetivo principal?" options={SURVEY_OBJECTIVES} selected={objective} onSelect={setObjective}/>
+        </div>
 
         {/* Prompt input */}
         <div style={{ background:"#fff", borderRadius:12, border:"1px solid rgba(12,10,9,0.10)", boxShadow:"0 1px 3px rgba(12,10,9,0.06)", padding:20, marginBottom:16 }}>
@@ -2474,6 +2518,8 @@ const ASSESSMENT_SYSTEM_PROMPT = "Eres un experto en desarrollo de habilidades b
 const AssessmentBuilder = ({ onBack }) => {
   const [step,      setStep]      = useState(0); // 0=prompt, 1=questions
   const [prompt,    setPrompt]    = useState("");
+  const [audience,  setAudience]  = useState("");
+  const [objective, setObjective] = useState("");
   const [loading,   setLoading]   = useState(false);
   const [questions, setQuestions] = useState(null);
   const [dragIdx,   setDragIdx]   = useState(null);
@@ -2496,7 +2542,7 @@ const AssessmentBuilder = ({ onBack }) => {
           model:"claude-sonnet-4-20250514",
           max_tokens:1000,
           system: ASSESSMENT_SYSTEM_PROMPT,
-          messages:[{ role:"user", content:`Contexto de la empresa: ${prompt}` }],
+          messages:[{ role:"user", content:`${audience ? `Audiencia: ${audience}. ` : ""}${objective ? `Objetivo: ${objective}. ` : ""}Contexto de la empresa: ${prompt}` }],
         }),
       });
       const data = await res.json();
@@ -2574,6 +2620,12 @@ const AssessmentBuilder = ({ onBack }) => {
       {/* ── STEP 0: Prompt ── */}
       {step === 0 && (
         <div style={{ animation:"fadeUp 0.2s ease" }}>
+          {/* Context questions */}
+          <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, padding:20, marginBottom:16, boxShadow:"0 1px 3px rgba(12,10,9,0.06)" }}>
+            <ChipSelector label="¿A quién va dirigido?" options={ASSESSMENT_AUDIENCES} selected={audience} onSelect={setAudience}/>
+            <ChipSelector label="¿Cuál es el objetivo principal?" options={ASSESSMENT_OBJECTIVES} selected={objective} onSelect={setObjective}/>
+          </div>
+
           <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, padding:20, marginBottom:20, boxShadow:"0 1px 3px rgba(12,10,9,0.06)" }}>
             <p style={{ fontSize:12, fontWeight:600, color:T.textMuted, textTransform:"uppercase", letterSpacing:"0.07em", margin:"0 0 12px" }}>
               Contexto de la empresa
