@@ -1470,14 +1470,23 @@ const SurveyList = ({ onSelect, onCreate }) => {
 
   return (
     <div>
-      <div className="flex items-start justify-between mb-6">
+      <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:24 }}>
         <div>
-          <h1 className="text-2xl font-black text-[#0C0A09] tracking-tight">Encuestas de feedback</h1>
-          <p className="text-sm text-[#A6A09B] mt-1">{SURVEYS.length} encuestas · {SURVEYS.filter(s=>s.status==="published").length} activas</p>
+          <h1 style={{ fontSize:22, fontWeight:800, color:T.textPrimary, margin:0, letterSpacing:"-0.02em" }}>
+            Encuestas de feedback
+          </h1>
+          <p style={{ fontSize:13, color:T.textMuted, margin:"4px 0 0" }}>
+            {SURVEYS.length} encuestas · {SURVEYS.filter(s=>s.status==="published").length} activas
+          </p>
         </div>
-        <button onClick={onCreate}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold text-white shadow-sm transition-all hover:shadow-md active:scale-95"
-          style={{ background:"#E26500" }}>
+        <button onClick={onCreate} style={{
+          display:"flex", alignItems:"center", gap:8,
+          padding:"9px 18px", borderRadius:8, border:"none",
+          fontSize:13, fontWeight:700, color:"#fff", cursor:"pointer",
+          background:BDS.primary[500],
+          boxShadow:"0 2px 8px rgba(226,101,0,0.25)",
+          fontFamily:"inherit", transition:"all 0.15s",
+        }}>
           + Nueva encuesta
         </button>
       </div>
@@ -1494,35 +1503,39 @@ const SurveyList = ({ onSelect, onCreate }) => {
         ))}
       </div>
 
-      <div className="bg-white rounded-xl border border-[rgba(12,10,9,0.10)] shadow-sm overflow-hidden">
-        <table className="w-full text-sm border-collapse">
+      <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, overflow:"hidden", boxShadow:"0 1px 3px rgba(12,10,9,0.06)" }}>
+        <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
           <thead>
-            <tr className="border-b border-[rgba(12,10,9,0.06)] bg-[#FAFAF9]">
+            <tr style={{ borderBottom:`1px solid ${T.borderSoft}`, background:BDS.neutral[50] }}>
               {["Encuesta","Tipo","Estado","Respuestas","Publicada","Creador"].map(h => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-[#A6A09B] uppercase tracking-wider">{h}</th>
+                <th key={h} style={{ padding:"10px 16px", textAlign:"left", fontSize:11, fontWeight:700, color:T.textMuted, textTransform:"uppercase", letterSpacing:"0.07em" }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {filtered.map(s => (
+            {filtered.map((s, i) => (
               <tr key={s.id}
-                onClick={() => onSelect(s)}
-                className={`border-b border-gray-50 transition-colors ${
-                  s.status==="draft" ? "opacity-50 cursor-not-allowed" : "hover:bg-[#FFFAEA]/40 cursor-pointer"
-                }`}>
-                <td className="px-4 py-3.5">
-                  <span className="font-semibold text-[#292524]">{s.name}</span>
-                  {s.status==="draft" && <span className="ml-2 text-xs text-[#A6A09B]">— No disponible</span>}
+                onClick={() => s.status !== "draft" && onSelect(s)}
+                style={{
+                  borderBottom: i < filtered.length-1 ? `1px solid ${T.borderSoft}` : "none",
+                  cursor: s.status==="draft" ? "default" : "pointer",
+                  opacity: s.status==="draft" ? 0.55 : 1,
+                  transition:"background 0.12s",
+                }}
+                onMouseEnter={e => { if(s.status!=="draft") e.currentTarget.style.background = BDS.neutral[50]; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+              >
+                <td style={{ padding:"13px 16px", fontWeight:600, color:T.textPrimary }}>
+                  {s.name}
+                  {s.status==="draft" && <span style={{ marginLeft:8, fontSize:12, color:T.textMuted }}>— No disponible</span>}
                 </td>
-                <td className="px-4 py-3.5"><TypeTag type={s.type}/></td>
-                <td className="px-4 py-3.5"><StatusBadge status={s.status}/></td>
-                <td className="px-4 py-3.5">
-                  <span className="font-bold text-[#292524]" style={{ fontFamily:"'DM Mono', monospace" }}>
-                    {s.responses.toLocaleString()}
-                  </span>
+                <td style={{ padding:"13px 16px" }}><TypeTag type={s.type}/></td>
+                <td style={{ padding:"13px 16px" }}><StatusBadge status={s.status}/></td>
+                <td style={{ padding:"13px 16px", fontFamily:"'DM Mono', monospace", fontWeight:700, color:T.textPrimary }}>
+                  {s.responses.toLocaleString()}
                 </td>
-                <td className="px-4 py-3.5 text-xs text-[#A6A09B]">{s.published || "—"}</td>
-                <td className="px-4 py-3.5 text-xs text-[#79716B]">{s.creator}</td>
+                <td style={{ padding:"13px 16px", fontSize:12, color:T.textMuted }}>{s.published || "—"}</td>
+                <td style={{ padding:"13px 16px", fontSize:12, color:BDS.neutral[600] }}>{s.creator}</td>
               </tr>
             ))}
           </tbody>
@@ -1838,77 +1851,105 @@ const FeatureFlagsPage = () => {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-start justify-between mb-8">
+      <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:24 }}>
         <div>
-          <h1 className="text-2xl font-black text-[#0C0A09] tracking-tight">Feature Flags</h1>
-          <p className="text-sm text-[#A6A09B] mt-1">{stats.total} flags · {stats.enabled} activos · {stats.prod} en producción</p>
+          <h1 style={{ fontSize:22, fontWeight:800, color:T.textPrimary, margin:0, letterSpacing:"-0.02em" }}>
+            Feature Flags
+          </h1>
+          <p style={{ fontSize:13, color:T.textMuted, margin:"4px 0 0" }}>
+            {stats.total} flags · {stats.enabled} activos · {stats.prod} en producción
+          </p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold text-white shadow-sm transition-all hover:shadow-md active:scale-95"
-          style={{ background:"#E26500" }}>
-          <span className="text-base leading-none">+</span> Nuevo flag
+        <button style={{
+          display:"flex", alignItems:"center", gap:8,
+          padding:"9px 18px", borderRadius:8, border:"none",
+          fontSize:13, fontWeight:700, color:"#fff", cursor:"pointer",
+          background:BDS.primary[500],
+          boxShadow:"0 2px 8px rgba(226,101,0,0.25)",
+          fontFamily:"inherit", transition:"all 0.15s",
+        }}>
+          + Nuevo flag
         </button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-3 mb-6">
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap:12, marginBottom:20 }}>
         {[
-          { label:"Total flags",      value:stats.total,   accent:"#0C0A09" },
-          { label:"Activos",          value:stats.enabled, accent:"#00975C" },
-          { label:"En producción",    value:stats.prod,    accent:"#E26500" },
+          { label:"Total flags",      value:stats.total,   accent:T.textPrimary },
+          { label:"Activos",          value:stats.enabled, accent:BDS.emerald[600] },
+          { label:"En producción",    value:stats.prod,    accent:BDS.primary[500] },
         ].map(s => (
-          <div key={s.label} className="bg-white rounded-xl border border-[rgba(12,10,9,0.10)] px-4 py-3 shadow-sm">
-            <p className="text-xs text-[#A6A09B] mb-1 font-medium">{s.label}</p>
-            <p className="text-2xl font-black" style={{ color:s.accent, fontFamily:"'DM Mono', monospace" }}>{s.value}</p>
+          <div key={s.label} style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, padding:"12px 16px", boxShadow:"0 1px 3px rgba(12,10,9,0.06)" }}>
+            <p style={{ fontSize:11, color:T.textMuted, margin:"0 0 4px", fontWeight:500 }}>{s.label}</p>
+            <p style={{ fontSize:22, fontWeight:800, color:s.accent, fontFamily:"'DM Mono', monospace", margin:0 }}>{s.value}</p>
           </div>
         ))}
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-3 mb-4">
+      <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:16 }}>
         {/* Search */}
-        <div className="relative flex-1 max-w-xs">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#D6D3D1] text-xs">🔍</span>
+        <div style={{ position:"relative", flex:1, maxWidth:240 }}>
+          <span style={{ position:"absolute", left:10, top:"50%", transform:"translateY(-50%)", fontSize:11, color:BDS.neutral[300] }}>🔍</span>
           <input value={search} onChange={e=>setSearch(e.target.value)}
             placeholder="Buscar flag, tag…"
-            className="w-full pl-8 pr-3 py-1.5 text-xs border border-[rgba(12,10,9,0.10)] rounded-lg bg-white text-[#44403B] placeholder-gray-300 focus:outline-none focus:border-[#E26500] transition-colors"/>
+            style={{
+              width:"100%", paddingLeft:30, paddingRight:12, padding:"6px 12px 6px 30px",
+              fontSize:12, border:`1px solid ${T.borderSoft}`, borderRadius:8,
+              background:BDS.neutral["000"], color:BDS.neutral[700],
+              fontFamily:"inherit", outline:"none", transition:"border 0.15s",
+            }}
+            onFocus={e => { e.target.style.borderColor = BDS.primary[500]; }}
+            onBlur={e  => { e.target.style.borderColor = T.borderSoft; }}
+          />
         </div>
         {/* Env filter */}
-        <div className="flex gap-1">
+        <div style={{ display:"flex", gap:4 }}>
           {["all","production","staging","development"].map(e => (
-            <button key={e} onClick={()=>setEnvFilter(e)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                envFilter===e ? "bg-[#001C35] text-white" : "bg-white border border-[rgba(12,10,9,0.10)] text-[#79716B] hover:border-[rgba(12,10,9,0.16)]"
-              }`}>
+            <button key={e} onClick={()=>setEnvFilter(e)} style={{
+              padding:"5px 12px", borderRadius:8, border:"none", cursor:"pointer",
+              fontSize:11, fontWeight:600, fontFamily:"inherit", transition:"all 0.15s",
+              background: envFilter===e ? BDS.secondary[950] : BDS.neutral["000"],
+              color:       envFilter===e ? "#fff" : BDS.neutral[500],
+              boxShadow:   envFilter===e ? "none" : `0 0 0 1px ${T.borderSoft}`,
+            }}>
               {e==="all" ? "Todos" : ENV_CFG[e].label}
             </button>
           ))}
         </div>
         {/* Status filter */}
-        <div className="flex gap-1 ml-auto">
+        <div style={{ display:"flex", gap:4, marginLeft:"auto" }}>
           {[{k:"all",l:"Todos"},{k:"enabled",l:"Activos"},{k:"disabled",l:"Inactivos"}].map(f => (
-            <button key={f.k} onClick={()=>setShowOnly(f.k)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                showOnly===f.k ? "bg-[#001C35] text-white" : "bg-white border border-[rgba(12,10,9,0.10)] text-[#79716B] hover:border-[rgba(12,10,9,0.16)]"
-              }`}>{f.l}</button>
+            <button key={f.k} onClick={()=>setShowOnly(f.k)} style={{
+              padding:"5px 12px", borderRadius:8, border:"none", cursor:"pointer",
+              fontSize:11, fontWeight:600, fontFamily:"inherit", transition:"all 0.15s",
+              background: showOnly===f.k ? BDS.secondary[950] : BDS.neutral["000"],
+              color:       showOnly===f.k ? "#fff" : BDS.neutral[500],
+              boxShadow:   showOnly===f.k ? "none" : `0 0 0 1px ${T.borderSoft}`,
+            }}>{f.l}</button>
           ))}
         </div>
       </div>
 
       {/* Flags list */}
-      <div className="space-y-2">
+      <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
         {filtered.map(flag => {
           const env = ENV_CFG[flag.env];
           return (
-            <div key={flag.id}
-              className="bg-white rounded-xl border border-[rgba(12,10,9,0.10)] shadow-sm px-5 py-4 flex items-start gap-4 transition-all hover:border-[rgba(12,10,9,0.16)] hover:shadow-md">
-
+            <div key={flag.id} style={{
+              background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`,
+              boxShadow:"0 1px 3px rgba(12,10,9,0.06)", padding:"16px 20px",
+              display:"flex", alignItems:"flex-start", gap:16, transition:"all 0.12s",
+            }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = BDS.neutral[300]; e.currentTarget.style.boxShadow = "0 2px 8px rgba(12,10,9,0.08)"; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = T.borderSoft; e.currentTarget.style.boxShadow = "0 1px 3px rgba(12,10,9,0.06)"; }}
+            >
               {/* Toggle */}
-              <button onClick={()=>toggleFlag(flag.id)}
-                className="flex-shrink-0 mt-0.5 w-10 h-5.5 rounded-full relative transition-all"
-                style={{
-                  background: flag.enabled ? "#E26500" : "#E7E5E4",
-                  width:40, height:22, borderRadius:11, position:"relative", flexShrink:0,
-                }}>
+              <button onClick={()=>toggleFlag(flag.id)} style={{
+                width:40, height:22, borderRadius:11, position:"relative", flexShrink:0,
+                background: flag.enabled ? BDS.primary[500] : BDS.neutral[200],
+                border:"none", cursor:"pointer", marginTop:2, transition:"background 0.2s",
+              }}>
                 <span style={{
                   position:"absolute", top:2, left: flag.enabled?20:2,
                   width:18, height:18, borderRadius:"50%", background:"#fff",
@@ -1917,38 +1958,34 @@ const FeatureFlagsPage = () => {
               </button>
 
               {/* Content */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className="text-sm font-bold text-[#0C0A09]" style={{ fontFamily:"'DM Mono', monospace" }}>
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:16 }}>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap", marginBottom:4 }}>
+                      <span style={{ fontSize:13, fontWeight:700, color:T.textPrimary, fontFamily:"'DM Mono', monospace" }}>
                         {flag.name}
                       </span>
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full border"
-                        style={{ background:env.bg, color:env.color, borderColor:env.border }}>
+                      <span style={{ fontSize:10, fontWeight:600, padding:"2px 8px", borderRadius:99, border:`1px solid ${env.border}`, background:env.bg, color:env.color }}>
                         {env.label}
                       </span>
                       {flag.tags.map(tag => (
-                        <span key={tag} className="text-[10px] px-1.5 py-0.5 rounded bg-[#F5F5F4] text-[#A6A09B] font-medium">#{tag}</span>
+                        <span key={tag} style={{ fontSize:10, padding:"2px 6px", borderRadius:4, background:BDS.neutral[100], color:T.textMuted, fontWeight:500 }}>#{tag}</span>
                       ))}
                     </div>
-                    <p className="text-xs text-[#79716B] leading-relaxed">{flag.description}</p>
+                    <p style={{ fontSize:12, color:BDS.neutral[600], lineHeight:1.5, margin:0 }}>{flag.description}</p>
                   </div>
 
                   {/* Rollout + meta */}
-                  <div className="flex-shrink-0 flex flex-col items-end gap-1.5 min-w-[140px]">
-                    {/* Rollout bar */}
-                    <div className="flex items-center gap-2 w-full">
-                      <div className="flex-1 h-1.5 bg-[#F5F5F4] rounded-full overflow-hidden">
-                        <div className="h-full rounded-full transition-all"
-                          style={{ width:`${flag.rollout}%`, background:flag.enabled?"linear-gradient(90deg,#001C35,#0094F5)":"#E7E5E4" }}/>
+                  <div style={{ flexShrink:0, display:"flex", flexDirection:"column", alignItems:"flex-end", gap:6, minWidth:140 }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:8, width:"100%" }}>
+                      <div style={{ flex:1, height:6, background:BDS.neutral[100], borderRadius:99, overflow:"hidden" }}>
+                        <div style={{ height:"100%", borderRadius:99, transition:"all 0.3s", width:`${flag.rollout}%`, background:flag.enabled?"linear-gradient(90deg,#001C35,#0094F5)":BDS.neutral[200] }}/>
                       </div>
-                      <span className="text-xs font-bold w-8 text-right flex-shrink-0"
-                        style={{ fontFamily:"'DM Mono', monospace", color:flag.enabled?"#E26500":"#A6A09B" }}>
+                      <span style={{ fontSize:12, fontWeight:700, width:32, textAlign:"right", flexShrink:0, fontFamily:"'DM Mono', monospace", color:flag.enabled?BDS.primary[500]:T.textMuted }}>
                         {flag.rollout}%
                       </span>
                     </div>
-                    <div className="flex items-center gap-3 text-[10px] text-[#A6A09B]">
+                    <div style={{ display:"flex", alignItems:"center", gap:8, fontSize:10, color:T.textMuted }}>
                       <span>{flag.owner}</span>
                       <span>·</span>
                       <span>{flag.updated}</span>
@@ -1961,9 +1998,9 @@ const FeatureFlagsPage = () => {
         })}
 
         {filtered.length===0 && (
-          <div className="text-center py-16 text-[#A6A09B]">
-            <div className="text-4xl mb-3">🚩</div>
-            <p className="text-sm font-semibold">No hay flags que coincidan</p>
+          <div style={{ textAlign:"center", padding:"48px 0", color:T.textMuted }}>
+            <div style={{ fontSize:32, marginBottom:12 }}>🚩</div>
+            <p style={{ fontSize:13, fontWeight:600, margin:0 }}>No hay flags que coincidan</p>
           </div>
         )}
       </div>
