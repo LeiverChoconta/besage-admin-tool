@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { NoteIcon, BrainIcon, Flag01Icon, Settings01Icon, UserGroupIcon, BarCode01Icon } from "@hugeicons/core-free-icons";
 import {
@@ -1764,34 +1764,142 @@ const EXAMPLES = [
 ];
 const EXAMPLE_TYPES = ["CES","CCR","PMF","Open"];
 
-// ─── CONTEXT QUESTIONS (shared) ───────────────────────────────────────────────
-const SURVEY_AUDIENCES = ["Clientes","Usuarios","Prospectos","Empleados","Líderes","Equipo específico"];
-const SURVEY_OBJECTIVES = ["Medir satisfacción","Identificar fricciones","Evaluar producto-mercado","Recoger feedback abierto","Medir esfuerzo","Entender churn"];
-const ASSESSMENT_AUDIENCES = ["Líderes","Mandos medios","Equipos operativos","Toda la organización","Área específica"];
-const ASSESSMENT_OBJECTIVES = ["Detectar brechas de habilidades","Medir competencias actuales","Planificar desarrollo","Evaluar cultura de equipo","Identificar fortalezas"];
+// ─── CONTEXT CHAT LOGIC (shared) ──────────────────────────────────────────────
+const AUDIENCE_KEYWORDS = ["clientes","usuarios","prospectos","empleados","líderes","equipo","mandos","organización","empresa","colaboradores"];
+const OBJECTIVE_KEYWORDS = ["satisfacción","fricciones","esfuerzo","churn","producto-mercado","feedback","competencias","habilidades","brechas","desarrollo","cultura","fortalezas","medir","evaluar","entender","identificar","detectar"];
 
-const ChipSelector = ({ label, options, selected, onSelect }) => (
-  <div style={{ marginBottom:16 }}>
-    <p style={{ fontSize:12, fontWeight:600, color:T.textMuted, textTransform:"uppercase", letterSpacing:"0.07em", margin:"0 0 10px" }}>{label}</p>
-    <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
-      {options.map(opt => {
-        const active = selected === opt;
-        return (
-          <button key={opt} onClick={() => onSelect(active ? "" : opt)}
-            style={{
-              padding:"7px 14px", borderRadius:99, fontSize:12, fontWeight:active ? 700 : 500,
-              border: active ? `1.5px solid ${BDS.primary[500]}` : `1px solid ${T.borderSoft}`,
-              background: active ? BDS.primary[50] : BDS.neutral["000"],
-              color: active ? BDS.primary[600] : T.textMuted,
-              cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s",
+function analyzePrompt(text) {
+  const lower = text.toLowerCase();
+  const hasAudience = AUDIENCE_KEYWORDS.some(k => lower.includes(k));
+  const hasObjective = OBJECTIVE_KEYWORDS.some(k => lower.includes(k));
+  return { hasAudience, hasObjective };
+}
+
+function buildChatQuestions(type, promptText) {
+  const { hasAudience, hasObjective } = analyzePrompt(promptText);
+  const questions = [];
+  if (type === "survey") {
+    if (!hasAudience && !hasObjective) {
+      questions.push({ key:"audience", text:"¿A quién va dirigida esta encuesta? (ej. clientes, usuarios, empleados…)" });
+      questions.push({ key:"objective", text:"¿Cuál es el objetivo principal? (ej. medir satisfacción, identificar fricciones, evaluar producto-mercado…)" });
+    } else if (!hasAudience) {
+      questions.push({ key:"audience", text:"¿A quién va dirigida esta encuesta?" });
+    } else if (!hasObjective) {
+      questions.push({ key:"objective", text:"¿Cuál es el objetivo principal de esta encuesta?" });
+    }
+    // If both detected, confirmation only
+    if (hasAudience && hasObjective) {
+      questions.push({ key:"confirm", text:"Parece que ya tengo el contexto necesario. ¿Quieres agregar algo más antes de generar la encuesta?" });
+    }
+  } else {
+    if (!hasAudience && !hasObjective) {
+      questions.push({ key:"audience", text:"¿A quién va dirigido este assessment? (ej. líderes, mandos medios, toda la organización…)" });
+      questions.push({ key:"objective", text:"¿Qué quieres lograr? (ej. detectar brechas, medir competencias, planificar desarrollo…)" });
+    } else if (!hasAudience) {
+      questions.push({ key:"audience", text:"¿A quién va dirigido este assessment?" });
+    } else if (!hasObjective) {
+      questions.push({ key:"objective", text:"¿Qué quieres lograr con este assessment?" });
+    }
+    if (hasAudience && hasObjective) {
+      questions.push({ key:"confirm", text:"Ya tengo el contexto clave. ¿Hay algo más que deba considerar antes de generar las preguntas?" });
+    }
+  }
+  return questions;
+}
+
+// ─── CONTEXT CHAT COMPONENT ──────────────────────────────────────────────────
+const ContextChat = ({ messages, currentQ, inputVal, onInputChange, onSend, onSkip, onGenerate, canGenerate, loading }) => {
+  const chatEndRef = useRef(null);
+  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior:"smooth" }); }, [messages, currentQ]);
+
+  const bubbleBase = { maxWidth:"85%", padding:"10px 14px", borderRadius:14, fontSize:13, lineHeight:1.5, fontFamily:"inherit" };
+  const aiBubble  = { ...bubbleBase, background:BDS.neutral[100], color:T.textPrimary, borderBottomLeftRadius:4, alignSelf:"flex-start" };
+  const userBubble = { ...bubbleBase, background:BDS.primary[500], color:"#fff", borderBottomRightRadius:4, alignSelf:"flex-end" };
+
+  return (
+    <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, boxShadow:"0 1px 3px rgba(12,10,9,0.06)", overflow:"hidden" }}>
+      {/* Chat messages */}
+      <div style={{ padding:"16px 16px 8px", display:"flex", flexDirection:"column", gap:10, minHeight:80, maxHeight:280, overflowY:"auto" }}>
+        {messages.map((m,i) => (
+          <div key={i} style={m.role === "ai" ? aiBubble : userBubble}>
+            {m.role === "ai" && <span style={{ fontSize:10, fontWeight:700, color:BDS.primary[500], display:"block", marginBottom:2 }}>Besage IA</span>}
+            {m.text}
+          </div>
+        ))}
+        {currentQ && !loading && (
+          <div style={aiBubble}>
+            <span style={{ fontSize:10, fontWeight:700, color:BDS.primary[500], display:"block", marginBottom:2 }}>Besage IA</span>
+            {currentQ.text}
+          </div>
+        )}
+        <div ref={chatEndRef}/>
+      </div>
+
+      {/* Input area */}
+      {!loading && (
+        <div style={{ borderTop:`1px solid ${T.borderSoft}`, padding:12, display:"flex", gap:8, alignItems:"center" }}>
+          {currentQ ? (
+            <>
+              <input
+                value={inputVal} onChange={e => onInputChange(e.target.value)}
+                onKeyDown={e => { if (e.key === "Enter" && inputVal.trim()) onSend(); }}
+                placeholder={currentQ.key === "confirm" ? "Opcional: agrega más contexto…" : "Escribe tu respuesta…"}
+                style={{
+                  flex:1, padding:"8px 12px", borderRadius:8, border:`1px solid ${T.borderSoft}`,
+                  fontSize:13, fontFamily:"inherit", outline:"none", color:T.textPrimary,
+                  transition:"border 0.15s",
+                }}
+                onFocus={e => { e.target.style.borderColor = BDS.primary[500]; }}
+                onBlur={e => { e.target.style.borderColor = T.borderSoft; }}
+                autoFocus
+              />
+              {currentQ.key === "confirm" ? (
+                <button onClick={onGenerate} style={{
+                  padding:"8px 16px", borderRadius:8, fontSize:12, fontWeight:700, border:"none",
+                  background:BDS.primary[500], color:"#fff", cursor:"pointer", fontFamily:"inherit",
+                  boxShadow:"0 2px 8px rgba(226,101,0,0.25)", whiteSpace:"nowrap",
+                }}>
+                  Generar →
+                </button>
+              ) : (
+                <button onClick={onSend} disabled={!inputVal.trim()} style={{
+                  padding:"8px 16px", borderRadius:8, fontSize:12, fontWeight:700, border:"none",
+                  background: inputVal.trim() ? BDS.primary[500] : BDS.neutral[200],
+                  color: inputVal.trim() ? "#fff" : T.textMuted,
+                  cursor: inputVal.trim() ? "pointer" : "not-allowed", fontFamily:"inherit", whiteSpace:"nowrap",
+                }}>
+                  Enviar
+                </button>
+              )}
+              {currentQ.key !== "confirm" && (
+                <button onClick={onSkip} style={{
+                  padding:"8px 12px", borderRadius:8, fontSize:11, fontWeight:600, border:`1px solid ${T.borderSoft}`,
+                  background:"transparent", color:T.textMuted, cursor:"pointer", fontFamily:"inherit", whiteSpace:"nowrap",
+                }}>
+                  Saltar
+                </button>
+              )}
+            </>
+          ) : canGenerate && (
+            <button onClick={onGenerate} style={{
+              width:"100%", padding:"10px", borderRadius:8, fontSize:13, fontWeight:700, border:"none",
+              background:BDS.primary[500], color:"#fff", cursor:"pointer", fontFamily:"inherit",
+              boxShadow:"0 2px 8px rgba(226,101,0,0.25)",
             }}>
-            {opt}
-          </button>
-        );
-      })}
+              Generar →
+            </button>
+          )}
+        </div>
+      )}
+      {loading && (
+        <div style={{ padding:"16px", display:"flex", alignItems:"center", gap:10, borderTop:`1px solid ${T.borderSoft}` }}>
+          <div style={{ width:16, height:16, borderRadius:"50%", border:`2px solid ${BDS.neutral[200]}`, borderTopColor:BDS.primary[500], animation:"spin 0.8s linear infinite" }}/>
+          <span style={{ fontSize:12, color:T.textMuted }}>Generando…</span>
+        </div>
+      )}
     </div>
-  </div>
-);
+  );
+};
 
 // ─── STEPPER SHARED COMPONENT ──────────────────────────────
 const BuilderStepper = ({ steps, current }) => (
@@ -1822,34 +1930,70 @@ const BuilderStepper = ({ steps, current }) => (
 );
 
 const SurveyBuilder = ({ onBack }) => {
-  const [step,     setStep]     = useState(0);
-  const [prompt,   setPrompt]   = useState("");
-  const [audience, setAudience] = useState("");
-  const [objective,setObjective]= useState("");
-  const [loading,  setLoading]  = useState(false);
-  const [result,   setResult]   = useState(null);
-  const [error,    setError]    = useState(null);
-  const [saved,    setSaved]    = useState(false);
-  const [hovered,  setHovered]  = useState(null);
+  const [step,       setStep]       = useState(0); // 0=prompt, 1=chat, 2=review
+  const [prompt,     setPrompt]     = useState("");
+  const [chatMsgs,   setChatMsgs]   = useState([]);
+  const [chatInput,  setChatInput]  = useState("");
+  const [chatQs,     setChatQs]     = useState([]);
+  const [chatQIdx,   setChatQIdx]   = useState(0);
+  const [loading,    setLoading]    = useState(false);
+  const [result,     setResult]     = useState(null);
+  const [error,      setError]      = useState(null);
+  const [saved,      setSaved]      = useState(false);
+  const [hovered,    setHovered]    = useState(null);
   const taRef = useRef(null);
-  const SB_STEPS = ["Configurar", "Revisar preguntas"];
+  const SB_STEPS = ["Describe", "Contexto", "Revisar preguntas"];
+
+  // After submitting prompt, transition to chat step
+  const handlePromptSubmit = () => {
+    if (!prompt.trim()) return;
+    const qs = buildChatQuestions("survey", prompt);
+    setChatQs(qs);
+    setChatQIdx(0);
+    setChatMsgs([{ role:"user", text: prompt }]);
+    setStep(1);
+  };
 
   const buildEnrichedPrompt = () => {
-    let enriched = prompt;
-    if (audience) enriched = `Audiencia: ${audience}. ` + enriched;
-    if (objective) enriched = `Objetivo: ${objective}. ` + enriched;
-    return enriched;
+    // Combine initial prompt + all user chat answers
+    return chatMsgs.filter(m => m.role === "user").map(m => m.text).join(". ");
+  };
+
+  const handleChatSend = () => {
+    if (!chatInput.trim()) return;
+    const newMsgs = [...chatMsgs, { role:"user", text: chatInput }];
+    setChatMsgs(newMsgs);
+    setChatInput("");
+    const nextIdx = chatQIdx + 1;
+    if (nextIdx >= chatQs.length) {
+      setChatQIdx(nextIdx);
+    } else {
+      setChatQIdx(nextIdx);
+    }
+  };
+
+  const handleChatSkip = () => {
+    const nextIdx = chatQIdx + 1;
+    if (nextIdx >= chatQs.length) {
+      setChatQIdx(nextIdx);
+    } else {
+      setChatQIdx(nextIdx);
+    }
   };
 
   const handleGenerate = async () => {
-    if (!prompt.trim()||loading) return;
     setLoading(true); setError(null); setResult(null);
-    try { const r = await generateSurveyWithAI(buildEnrichedPrompt()); setResult(r); setStep(1); }
-    catch(e) { setError("No se pudo generar la encuesta. Revisa la conexión."); }
+    // Add generating message
+    setChatMsgs(prev => [...prev, { role:"ai", text:"Perfecto, estoy generando tu encuesta…" }]);
+    try {
+      const r = await generateSurveyWithAI(buildEnrichedPrompt());
+      setResult(r); setStep(2);
+    } catch(e) { setError("No se pudo generar la encuesta. Revisa la conexión."); }
     setLoading(false);
   };
 
-  const typeList = Object.values(SURVEY_TYPES);
+  const currentQ = chatQIdx < chatQs.length ? chatQs[chatQIdx] : null;
+  const canGenerate = chatQIdx >= chatQs.length;
 
   return (
     <div>
@@ -1859,8 +2003,8 @@ const SurveyBuilder = ({ onBack }) => {
             <h1 style={{ fontSize:22, fontWeight:800, color:"#0C0A09", letterSpacing:"-0.02em", margin:"0 0 4px" }}>Constructor IA</h1>
             <p style={{ fontSize:13, color:"#A6A09B", margin:"0 0 20px" }}>Describe qué quieres medir y la IA generará la encuesta ideal.</p>
           </div>
-          {step===1 && (
-            <button onClick={() => { setStep(0); setResult(null); }}
+          {step >= 1 && (
+            <button onClick={() => { setStep(0); setResult(null); setChatMsgs([]); setChatQIdx(0); }}
               style={{ fontSize:12, color:T.textMuted, background:"none", border:`1px solid ${T.borderBase}`, borderRadius:8, padding:"6px 12px", cursor:"pointer", fontFamily:"inherit", fontWeight:600 }}>
               ← Volver a configurar
             </button>
@@ -1868,20 +2012,13 @@ const SurveyBuilder = ({ onBack }) => {
         </div>
         <BuilderStepper steps={SB_STEPS} current={step}/>
 
+        {/* Step 0: Prompt */}
         {step === 0 && (
         <div style={{ animation:"fadeUp 0.2s ease" }}>
-
-        {/* Context questions */}
-        <div style={{ background:"#fff", borderRadius:12, border:"1px solid rgba(12,10,9,0.10)", boxShadow:"0 1px 3px rgba(12,10,9,0.06)", padding:20, marginBottom:16 }}>
-          <ChipSelector label="¿A quién va dirigida?" options={SURVEY_AUDIENCES} selected={audience} onSelect={setAudience}/>
-          <ChipSelector label="¿Cuál es el objetivo principal?" options={SURVEY_OBJECTIVES} selected={objective} onSelect={setObjective}/>
-        </div>
-
-        {/* Prompt input */}
         <div style={{ background:"#fff", borderRadius:12, border:"1px solid rgba(12,10,9,0.10)", boxShadow:"0 1px 3px rgba(12,10,9,0.06)", padding:20, marginBottom:16 }}>
           <p style={{ fontSize:12, fontWeight:600, color:"#A6A09B", textTransform:"uppercase", letterSpacing:"0.1em", margin:"0 0 12px" }}>Describe tu necesidad</p>
           <textarea ref={taRef} value={prompt} rows={4} onChange={e=>setPrompt(e.target.value)}
-            onKeyDown={e=>{ if(e.key==="Enter"&&e.metaKey) handleGenerate(); }}
+            onKeyDown={e=>{ if(e.key==="Enter"&&e.metaKey) handlePromptSubmit(); }}
             placeholder="Ej: Quiero entender por qué mis usuarios abandonan el checkout…"
             style={{
               width:"100%", background:"#FAFAF9", border:"1px solid rgba(12,10,9,0.10)", borderRadius:8,
@@ -1891,15 +2028,15 @@ const SurveyBuilder = ({ onBack }) => {
             onFocus={e=>{ e.target.style.borderColor="#E26500"; e.target.style.boxShadow="0 0 0 3px rgba(226,101,0,0.12)"; }}
             onBlur={e=>{ e.target.style.borderColor="rgba(12,10,9,0.10)"; e.target.style.boxShadow="none"; }}/>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:12 }}>
-            <span style={{ fontSize:12, color:"#D6D3D1" }}>⌘ + Enter para generar</span>
-            <button onClick={handleGenerate} disabled={!prompt.trim()||loading}
+            <span style={{ fontSize:12, color:"#D6D3D1" }}>⌘ + Enter para continuar</span>
+            <button onClick={handlePromptSubmit} disabled={!prompt.trim()}
               style={{
                 padding:"8px 20px", borderRadius:8, fontSize:13, fontWeight:700, border:"none", fontFamily:"inherit", transition:"all 0.15s",
-                ...(!prompt.trim()||loading
+                ...(!prompt.trim()
                   ? { background:"#f1f5f9", color:"#cbd5e1", cursor:"not-allowed" }
                   : { background:"#E26500", color:"#fff", cursor:"pointer", boxShadow:"0 2px 8px rgba(226,101,0,0.3)" }),
               }}>
-              {loading ? "Generando…" : "Generar encuesta →"}
+              Continuar →
             </button>
           </div>
         </div>
@@ -1922,24 +2059,31 @@ const SurveyBuilder = ({ onBack }) => {
             ))}
           </div>
         </div>
-
-        {/* Loading */}
-        {loading && (
-          <div style={{ background:"#fff", border:"1px solid rgba(12,10,9,0.10)", borderRadius:12, padding:40, textAlign:"center", boxShadow:"0 1px 3px rgba(12,10,9,0.06)" }}>
-            <div style={{ fontSize:30, marginBottom:12, animation:"spin 1.2s linear infinite", display:"inline-block" }}>⚙️</div>
-            <p style={{ fontSize:13, color:"#A6A09B", margin:0 }}>Analizando contexto y generando preguntas…</p>
-          </div>
-        )}
-
-        {/* Error */}
-        {error && (
-          <div style={{ background:"#fef2f2", border:"1px solid #fecaca", borderRadius:12, padding:16, fontSize:13, color:"#dc2626" }}>{error}</div>
-        )}
         </div>
         )}
 
-        {/* Step 1: Result */}
-        {step === 1 && result && (
+        {/* Step 1: Chat context */}
+        {step === 1 && (
+          <div style={{ animation:"fadeUp 0.2s ease" }}>
+            <ContextChat
+              messages={chatMsgs}
+              currentQ={currentQ}
+              inputVal={chatInput}
+              onInputChange={setChatInput}
+              onSend={handleChatSend}
+              onSkip={handleChatSkip}
+              onGenerate={handleGenerate}
+              canGenerate={canGenerate}
+              loading={loading}
+            />
+            {error && (
+              <div style={{ background:"#fef2f2", border:"1px solid #fecaca", borderRadius:12, padding:16, fontSize:13, color:"#dc2626", marginTop:12 }}>{error}</div>
+            )}
+          </div>
+        )}
+
+        {/* Step 2: Result */}
+        {step === 2 && result && (
           <div style={{ background:"#fff", border:"1px solid rgba(12,10,9,0.10)", borderRadius:12, padding:20, boxShadow:"0 1px 3px rgba(12,10,9,0.06)", animation:"fadeUp 0.3s ease" }}>
             <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:16 }}>
               <div>
@@ -2516,25 +2660,52 @@ const AssessmentList = ({ onSelect, onCreate }) => {
 const ASSESSMENT_SYSTEM_PROMPT = "Eres un experto en desarrollo de habilidades blandas para organizaciones. Genera entre 25 y 28 preguntas de assessment en español para medir las habilidades blandas, basado en el contexto del usuario. Habilidades: COM (Comunicación), TW (Trabajo en equipo), EI (Inteligencia emocional), EM (Empatía), EPM (Gestión del rendimiento), ACC (Responsabilidad), INN (Innovación), DC (Conversaciones difíciles). Cada pregunta tipo Likert 1-5. Responde SOLO JSON sin texto extra. Formato: {\"questions\":[{\"id\":1,\"skill\":\"COM\",\"text\":\"texto\"}]}";
 // ─── ASSESSMENT BUILDER ───────────────────────────────────────────────────────
 const AssessmentBuilder = ({ onBack }) => {
-  const [step,      setStep]      = useState(0); // 0=prompt, 1=questions
+  const [step,      setStep]      = useState(0); // 0=prompt, 1=chat, 2=questions
   const [prompt,    setPrompt]    = useState("");
-  const [audience,  setAudience]  = useState("");
-  const [objective, setObjective] = useState("");
+  const [chatMsgs,  setChatMsgs]  = useState([]);
+  const [chatInput, setChatInput] = useState("");
+  const [chatQs,    setChatQs]    = useState([]);
+  const [chatQIdx,  setChatQIdx]  = useState(0);
   const [loading,   setLoading]   = useState(false);
   const [questions, setQuestions] = useState(null);
   const [dragIdx,   setDragIdx]   = useState(null);
   const [dragOver,  setDragOver]  = useState(null);
-  const [status,    setStatus]    = useState(null); // null | "staging" | "published"
+  const [status,    setStatus]    = useState(null);
   const [saving,    setSaving]    = useState(false);
   const [saved,     setSaved]     = useState(false);
   const textareaRef = useRef(null);
-  const ASS_STEPS = ["Contexto", "Revisar preguntas"];
+  const ASS_STEPS = ["Describe", "Contexto", "Revisar preguntas"];
+
+  const handlePromptSubmit = () => {
+    if (!prompt.trim()) return;
+    const qs = buildChatQuestions("assessment", prompt);
+    setChatQs(qs);
+    setChatQIdx(0);
+    setChatMsgs([{ role:"user", text: prompt }]);
+    setStep(1);
+  };
+
+  const buildEnrichedPrompt = () => {
+    return chatMsgs.filter(m => m.role === "user").map(m => m.text).join(". ");
+  };
+
+  const handleChatSend = () => {
+    if (!chatInput.trim()) return;
+    setChatMsgs(prev => [...prev, { role:"user", text: chatInput }]);
+    setChatInput("");
+    setChatQIdx(prev => prev + 1);
+  };
+
+  const handleChatSkip = () => {
+    setChatQIdx(prev => prev + 1);
+  };
 
   const handleGenerate = async () => {
-    if (!prompt.trim()) return;
     setLoading(true);
     setQuestions(null);
+    setChatMsgs(prev => [...prev, { role:"ai", text:"Perfecto, generando las preguntas del assessment…" }]);
     try {
+      const enriched = buildEnrichedPrompt();
       const res = await fetch("https://api.anthropic.com/v1/messages", {
         method:"POST",
         headers:{ "Content-Type":"application/json" },
@@ -2542,7 +2713,7 @@ const AssessmentBuilder = ({ onBack }) => {
           model:"claude-sonnet-4-20250514",
           max_tokens:1000,
           system: ASSESSMENT_SYSTEM_PROMPT,
-          messages:[{ role:"user", content:`${audience ? `Audiencia: ${audience}. ` : ""}${objective ? `Objetivo: ${objective}. ` : ""}Contexto de la empresa: ${prompt}` }],
+          messages:[{ role:"user", content:`Contexto de la empresa: ${enriched}` }],
         }),
       });
       const data = await res.json();
@@ -2550,13 +2721,11 @@ const AssessmentBuilder = ({ onBack }) => {
       const clean = raw.replace(/```json|```/g,"").trim();
       const parsed = JSON.parse(clean);
       const rawQs = parsed.questions || ASSESSMENT_QUESTIONS.slice(0,27);
-      // Shuffle so no two consecutive questions share the same skill
       const shuffled = [...rawQs];
       for (let i = shuffled.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
       }
-      // Resolve consecutive same-skill collisions
       for (let i = 1; i < shuffled.length; i++) {
         if (shuffled[i].skill === shuffled[i-1].skill) {
           const swapIdx = shuffled.findIndex((q, k) => k > i && q.skill !== shuffled[i-1].skill);
@@ -2564,13 +2733,16 @@ const AssessmentBuilder = ({ onBack }) => {
         }
       }
       setQuestions(shuffled.map((q,i) => ({ ...q, id:i+1 })));
-      setStep(1);
+      setStep(2);
     } catch(e) {
       setQuestions(ASSESSMENT_QUESTIONS.slice(0,27).sort(() => Math.random()-0.5));
-      setStep(1);
+      setStep(2);
     }
     setLoading(false);
   };
+
+  const currentQ = chatQIdx < chatQs.length ? chatQs[chatQIdx] : null;
+  const canGenerate = chatQIdx >= chatQs.length;
 
   const handleDragStart = (e, idx) => { setDragIdx(idx); e.dataTransfer.effectAllowed="move"; };
   const handleDragOver  = (e, idx) => { e.preventDefault(); if(idx !== dragOver) setDragOver(idx); };
@@ -2595,7 +2767,6 @@ const AssessmentBuilder = ({ onBack }) => {
 
   return (
     <div style={{ maxWidth:760, margin:"0 auto" }}>
-      {/* Back */}
       <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:4 }}>
         <div>
           <button onClick={onBack} style={{ display:"flex", alignItems:"center", gap:6, background:"none", border:"none", cursor:"pointer", fontSize:12, color:T.textMuted, fontFamily:"inherit", marginBottom:8, padding:0 }}>
@@ -2608,8 +2779,8 @@ const AssessmentBuilder = ({ onBack }) => {
             Describe las necesidades de la empresa y generaremos preguntas enfocadas en las 8 habilidades.
           </p>
         </div>
-        {step === 1 && (
-          <button onClick={() => { setStep(0); setQuestions(null); setStatus(null); }}
+        {step >= 1 && (
+          <button onClick={() => { setStep(0); setQuestions(null); setStatus(null); setChatMsgs([]); setChatQIdx(0); }}
             style={{ fontSize:12, color:T.textMuted, background:"none", border:`1px solid ${T.borderBase}`, borderRadius:8, padding:"6px 12px", cursor:"pointer", fontFamily:"inherit", fontWeight:600, flexShrink:0 }}>
             ← Volver a configurar
           </button>
@@ -2620,12 +2791,6 @@ const AssessmentBuilder = ({ onBack }) => {
       {/* ── STEP 0: Prompt ── */}
       {step === 0 && (
         <div style={{ animation:"fadeUp 0.2s ease" }}>
-          {/* Context questions */}
-          <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, padding:20, marginBottom:16, boxShadow:"0 1px 3px rgba(12,10,9,0.06)" }}>
-            <ChipSelector label="¿A quién va dirigido?" options={ASSESSMENT_AUDIENCES} selected={audience} onSelect={setAudience}/>
-            <ChipSelector label="¿Cuál es el objetivo principal?" options={ASSESSMENT_OBJECTIVES} selected={objective} onSelect={setObjective}/>
-          </div>
-
           <div style={{ background:BDS.neutral["000"], borderRadius:12, border:`1px solid ${T.borderSoft}`, padding:20, marginBottom:20, boxShadow:"0 1px 3px rgba(12,10,9,0.06)" }}>
             <p style={{ fontSize:12, fontWeight:600, color:T.textMuted, textTransform:"uppercase", letterSpacing:"0.07em", margin:"0 0 12px" }}>
               Contexto de la empresa
@@ -2634,7 +2799,8 @@ const AssessmentBuilder = ({ onBack }) => {
               ref={textareaRef}
               value={prompt}
               onChange={e => setPrompt(e.target.value)}
-              placeholder="Ej: Somos una empresa de tecnología de 200 personas. Necesitamos mejorar la comunicación entre equipos remotos y fortalecer el liderazgo en mandos medios. Hay tensiones en los equipos cross-funcionales y queremos detectar brechas en empatía y gestión del rendimiento..."
+              onKeyDown={e => { if (e.key === "Enter" && e.metaKey) handlePromptSubmit(); }}
+              placeholder="Ej: Somos una empresa de tecnología de 200 personas. Necesitamos mejorar la comunicación entre equipos remotos y fortalecer el liderazgo en mandos medios..."
               style={{
                 width:"100%", minHeight:140, resize:"vertical",
                 fontSize:13, lineHeight:1.6, color:T.textPrimary,
@@ -2645,31 +2811,45 @@ const AssessmentBuilder = ({ onBack }) => {
               onFocus={e => { e.target.style.borderColor = BDS.primary[500]; e.target.style.boxShadow = `0 0 0 3px rgba(226,101,0,0.10)`; }}
               onBlur={e  => { e.target.style.borderColor = T.borderSoft;     e.target.style.boxShadow = "none"; }}
             />
-            <button
-              onClick={handleGenerate}
-              disabled={!prompt.trim() || loading}
-              style={{
-                width:"100%", marginTop:16, padding:"12px", borderRadius:8, border:"none",
-                fontSize:14, fontWeight:700, cursor: prompt.trim() ? "pointer" : "not-allowed",
-                fontFamily:"inherit", transition:"all 0.15s",
-                background: prompt.trim() ? BDS.primary[500] : BDS.neutral[200],
-                color: prompt.trim() ? "#fff" : T.textMuted,
-                boxShadow: prompt.trim() ? "0 2px 8px rgba(226,101,0,0.25)" : "none",
-              }}>
-              {loading ? "Generando preguntas..." : "Generar preguntas con IA →"}
-            </button>
-          </div>
-          {loading && (
-            <div style={{ textAlign:"center", padding:"48px 0", color:T.textMuted }}>
-              <div style={{ width:32, height:32, borderRadius:"50%", border:`3px solid ${BDS.neutral[200]}`, borderTopColor:BDS.primary[500], animation:"spin 0.8s linear infinite", margin:"0 auto 16px" }}/>
-              <p style={{ fontSize:13, margin:0 }}>Analizando el contexto y generando preguntas...</p>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:12 }}>
+              <span style={{ fontSize:12, color:BDS.neutral[300] }}>⌘ + Enter para continuar</span>
+              <button
+                onClick={handlePromptSubmit}
+                disabled={!prompt.trim()}
+                style={{
+                  padding:"10px 20px", borderRadius:8, border:"none",
+                  fontSize:13, fontWeight:700, fontFamily:"inherit", transition:"all 0.15s",
+                  background: prompt.trim() ? BDS.primary[500] : BDS.neutral[200],
+                  color: prompt.trim() ? "#fff" : T.textMuted,
+                  cursor: prompt.trim() ? "pointer" : "not-allowed",
+                  boxShadow: prompt.trim() ? "0 2px 8px rgba(226,101,0,0.25)" : "none",
+                }}>
+                Continuar →
+              </button>
             </div>
-          )}
+          </div>
         </div>
       )}
 
-      {/* ── STEP 1: Questions list ── */}
-      {step === 1 && questions && !loading && (
+      {/* ── STEP 1: Chat context ── */}
+      {step === 1 && (
+        <div style={{ animation:"fadeUp 0.2s ease" }}>
+          <ContextChat
+            messages={chatMsgs}
+            currentQ={currentQ}
+            inputVal={chatInput}
+            onInputChange={setChatInput}
+            onSend={handleChatSend}
+            onSkip={handleChatSkip}
+            onGenerate={handleGenerate}
+            canGenerate={canGenerate}
+            loading={loading}
+          />
+        </div>
+      )}
+
+      {/* ── STEP 2: Questions list ── */}
+      {step === 2 && questions && !loading && (
         <div>
           {/* Status bar */}
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
