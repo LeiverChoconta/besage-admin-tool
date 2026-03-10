@@ -120,7 +120,7 @@ The goal was to validate the concept of a unified admin panel for Besage's produ
 
 ## 👤 Author
 
-**Leiver Choconta** — Product Design & Development at Besage  
+**Leiver Choconta** — Product Designer at Besage  
 [GitHub @LeiverChoconta](https://github.com/LeiverChoconta)
 
 ---
